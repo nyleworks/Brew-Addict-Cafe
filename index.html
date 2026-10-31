@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Brew Addict Café · Night coffee in Kundasang, Sabah</title>
+  <meta name="description" content="Brew Addict Café, the night-coffee hideout on Jalan Sinisian, Kundasang. Lattes, matcha and Spanish latte, open daily 10:00 AM – 11:30 PM. Order on foodpanda or drop by.">
+  <meta name="theme-color" content="#f5f2ec">
+  <meta name="format-detection" content="telephone=no">
+  <!-- Once the site has its web address, add <link rel="canonical"> and og:url, and make og:image and twitter:image full https:// links -->
+
+  <!-- Link previews (WhatsApp, Facebook, Instagram, X) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Brew Addict Café">
+  <meta property="og:title" content="Brew Addict Café · Open late in Kundasang">
+  <meta property="og:description" content="The night-coffee hideout off the Sinisian road. Open daily 10:00 AM – 11:30 PM.">
+  <meta property="og:image" content="og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="brew addict wordmark beside bands fading from day to night, with the café's hours">
+  <meta property="og:locale" content="en_MY">
+  <meta property="og:locale:alternate" content="ms_MY">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Brew Addict Café · Open late in Kundasang">
+  <meta name="twitter:description" content="The night-coffee hideout off the Sinisian road. Open daily 10:00 AM – 11:30 PM.">
+  <meta name="twitter:image" content="og-image.png">
+
+  <!-- Café details for Google Search and Maps -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CafeOrCoffeeShop",
+    "name": "Brew Addict Café",
+    "description": "The night-coffee hideout off the Sinisian road in Kundasang.",
+    "image": "og-image.png",
+    "telephone": "+60 11-6412 2877",
+    "priceRange": "RM 8 – RM 15",
+    "servesCuisine": ["Coffee", "Matcha", "Non-coffee drinks"],
+    "acceptsReservations": false,
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Simpang Jalan Kampung, Jalan Sinisian",
+      "addressLocality": "Pekan Kundasang",
+      "addressRegion": "Sabah",
+      "postalCode": "89308",
+      "addressCountry": "MY"
+    },
+    "hasMap": "https://www.google.com/maps/search/?api=1&query=Brew+Addict+Cafe+Jalan+Sinisian+Kundasang",
+    "openingHoursSpecification": [{
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      "opens": "10:00",
+      "closes": "23:30"
+    }],
+    "sameAs": ["https://www.foodpanda.my/restaurant/hcd2/brew-addict-kundasang-hcd2"]
+  }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Lexend:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preload" as="image" href="images/signboard.webp" type="image/webp">
+</head>
+<body>
+  <a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+  <div class="sky" aria-hidden="true"><canvas id="topo"></canvas></div>
+
+  <header class="site-header">
+    <div class="wrap header-row">
+      <a class="header-brand" href="#top" aria-label="brew addict, home">
+        <svg class="sky-icon" viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <defs><clipPath id="sky-icon-clip"><rect id="sky-icon-clip-rect" x="0" y="0" width="24" height="24"></rect></clipPath></defs>
+          <g clip-path="url(#sky-icon-clip)">
+            <g id="sky-sun">
+              <circle cx="12" cy="12" r="4"></circle>
+              <g id="sky-rays"></g>
+            </g>
+          </g>
+          <line id="sky-horizon" x1="3" y1="17" x2="21" y2="17" opacity="0"></line>
+          <path id="sky-moon" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" opacity="0"></path>
+        </svg>
+        <span class="ba-wordmark header-mark">brew<br>addict</span>
+      </a>
+      <nav class="header-nav" aria-label="Main">
+        <a href="#menu" data-i18n="nav.menu">Menu</a>
+        <a href="#story" data-i18n="nav.story">Our story</a>
+        <a href="#visit" data-i18n="nav.visit">Visit</a>
+      </nav>
+      <div class="header-tools">
+        <div class="ba-lang" role="group" aria-label="Language">
+          <button type="button" data-lang="en" aria-pressed="true">EN</button>
+          <button type="button" data-lang="ms" aria-pressed="false">BM</button>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-progress" aria-hidden="true"><span id="scroll-progress"></span></div>
+  </header>
+
+  <!-- The big wordmark fills the opening view, then shrinks up into the navigation bar as you scroll (script.js paintMark) -->
+  <p class="ba-wordmark hero-mark" id="hero-mark" aria-hidden="true">brew<br>addict</p>
+
+  <!-- Scroll clock: tap it to go back to the top. At the very bottom of the page an up arrow rises out of its top edge. -->
+  <button type="button" class="scroll-clock" id="scroll-clock" aria-label="Back to top" data-i18n-label="top">
+    <span class="scroll-clock__arrow" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V5M5.5 11.5 12 5l6.5 6.5"/></svg>
+    </span>
+    <svg viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-linecap="round" aria-hidden="true">
+      <circle class="scroll-clock__face" cx="24" cy="24" r="22" stroke-width="1.75"></circle>
+      <g id="scroll-clock-ticks" stroke-width="1.5"></g>
+      <line id="scroll-clock-hour" x1="24" y1="24" x2="24" y2="13" stroke-width="2.5"></line>
+      <line id="scroll-clock-min" x1="24" y1="24" x2="24" y2="7" stroke-width="1.5"></line>
+      <circle cx="24" cy="24" r="2.2" fill="currentColor" stroke="none"></circle>
+    </svg>
+  </button>
+
+  <main id="main">
+    <!-- 10:00 AM · Doors open -->
+    <section class="slot slot--1000 hero-scroll" id="top" data-slot="0">
+      <!-- The stage sticks while you scroll through this section: the wordmark flies up, the signboard drops in, then the text rises -->
+      <div class="hero-stage" id="hero-stage">
+        <!-- Everything in the scene pans up a little as the text arrives, so a big sign and the text both fit -->
+        <div class="hero-scene" id="hero-scene">
+          <div class="wrap">
+            <div class="ba-time">
+              <span class="ba-time__clock">10:00 AM</span>
+              <span class="ba-time__label" data-i18n="time.1000">Doors open</span>
+              <span class="ba-time__now" hidden><span data-i18n="now">Now</span></span>
+            </div>
+          </div>
+          <!-- The sign's feet land on the bottom edge of this lane -->
+          <div class="sign-lane">
+            <div class="sign-shadow" id="sign-shadow" aria-hidden="true"></div>
+            <div class="sign-drop" id="sign-drop">
+              <img class="sign-drop__img" id="sign-img" src="images/signboard.webp" width="540" height="900" decoding="async"
+                alt="The café's white A-frame sign: WELCOME, Brew Addict, opening hours 10.00am – 11.30pm" data-i18n-alt="sign.alt">
+            </div>
+          </div>
+          <!-- After the sign settles, these rise up from below the screen, one after another -->
+          <div class="wrap hero__text">
+            <p class="eyebrow" data-rise data-i18n="hero.eyebrow">Brew Addict Café · Kundasang</p>
+            <h1 class="poster" data-rise data-i18n="hero.title">Open late</h1>
+            <p class="lede" data-rise data-i18n="hero.lede">The night-coffee hideout off the Sinisian road. Open from morning mist till 11:30 at night.</p>
+            <div class="actions" data-rise>
+              <a class="ba-btn ba-btn--primary" href="#menu" data-i18n="cta.menu">See the menu</a>
+              <a class="ba-btn ba-btn--outline" href="https://www.foodpanda.my/restaurant/hcd2/brew-addict-kundasang-hcd2" target="_blank" rel="noopener" data-link="foodpanda" data-i18n="cta.foodpanda">Order on foodpanda</a>
+              <a class="ba-btn ba-btn--outline" href="https://wa.me/601164122877" target="_blank" rel="noopener" data-i18n="cta.whatsapp">WhatsApp us</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="band band--1000-1500" aria-hidden="true"></div>
+
+    <!-- 3:00 PM · The mountain is out -->
+    <section class="slot slot--1500" id="story" data-slot="1">
+      <div class="wrap">
+        <div class="ba-time">
+          <span class="ba-time__clock">3:00 PM</span>
+          <span class="ba-time__label" data-i18n="time.1500">The mountain is out</span>
+          <span class="ba-time__now" hidden><span data-i18n="now">Now</span></span>
+        </div>
+        <div class="split">
+          <h2 class="h2" data-i18n="story.title">Kundasang, after dark</h2>
+          <div class="prose">
+            <p data-i18n="story.p1">Everyone pictures Kundasang at 7 AM, with Kinabalu in full sun. We're Kundasang at 8:30 PM.</p>
+            <p data-i18n="story.p2">Dark jackets, an iced matcha sweating next to a steaming latte, and the espresso machine still humming when the rest of town has gone quiet.</p>
+            <p data-i18n="story.p3">Come by in the afternoon while the mountain is out. Stay until the fog rolls in.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="band band--dusk" aria-hidden="true"></div>
+
+    <!-- 7:00 PM · The fog rolls in -->
+    <section class="slot slot--1900 ba-on-night" id="menu" data-slot="2">
+      <div class="wrap">
+        <div class="ba-time">
+          <span class="ba-time__clock">7:00 PM</span>
+          <span class="ba-time__label" data-i18n="time.1900">The fog rolls in</span>
+          <span class="ba-time__now" hidden><span data-i18n="now">Now</span></span>
+        </div>
+        <h2 class="h2" data-i18n="menu.title">The menu</h2>
+        <p class="note" data-i18n="menu.note">Prices in RM.</p>
+        <div class="actions actions--menu">
+          <a class="ba-btn ba-btn--primary" href="https://www.foodpanda.my/restaurant/hcd2/brew-addict-kundasang-hcd2" target="_blank" rel="noopener" data-link="foodpanda" data-i18n="cta.foodpanda">Order on foodpanda</a>
+        </div>
+        <div class="menu-grid" id="menu-grid"></div>
+      </div>
+    </section>
+
+    <div class="band band--1900-2100" aria-hidden="true"></div>
+
+    <!-- 9:00 PM · Still brewing -->
+    <section class="slot slot--2100 ba-on-night" data-slot="3">
+      <div class="wrap">
+        <div class="ba-time">
+          <span class="ba-time__clock">9:00 PM</span>
+          <span class="ba-time__label" data-i18n="time.2100">Still brewing</span>
+          <span class="ba-time__now" hidden><span data-i18n="now">Now</span></span>
+        </div>
+        <div class="night">
+          <p class="poster poster--night" data-i18n="night.title">Still open</p>
+          <p class="lede" data-i18n="night.lede">Steam, string lights and a warm cup when the highland cold sets in. No rush. We're here till 11:30.</p>
+        </div>
+        <div class="gallery">
+          <!-- Replace each placeholder with the café's own photos -->
+          <figure class="photo"><div class="photo__placeholder" data-i18n="photo.drinks">Photo: drinks</div></figure>
+          <figure class="photo"><div class="photo__placeholder" data-i18n="photo.aframe">Photo: the A-frame</div></figure>
+          <figure class="photo"><div class="photo__placeholder" data-i18n="photo.night">Photo: the café at night</div></figure>
+        </div>
+      </div>
+    </section>
+
+    <div class="band band--2100-2330" aria-hidden="true"></div>
+
+    <!-- 11:30 PM · Closing time -->
+    <section class="slot slot--2330 ba-on-night" id="visit" data-slot="4">
+      <div class="wrap">
+        <div class="ba-time">
+          <span class="ba-time__clock">11:30 PM</span>
+          <span class="ba-time__label" data-i18n="time.2330">Closing time</span>
+          <span class="ba-time__now" hidden><span data-i18n="now">Now</span></span>
+        </div>
+        <h2 class="h2" data-i18n="visit.title">Find us</h2>
+        <div class="visit">
+          <div class="visit__block">
+            <h3 class="h3" data-i18n="visit.where">Where</h3>
+            <address>Simpang Jalan Kampung, Jalan Sinisian,<br>Pekan Kundasang, 89308 Ranau, Sabah</address>
+            <p class="muted" data-i18n="visit.near">Near the Sinisian junction.</p>
+          </div>
+          <div class="visit__block">
+            <h3 class="h3" data-i18n="visit.hours">Hours</h3>
+            <p data-i18n="visit.daily">Daily, 10:00 AM – 11:30 PM</p>
+          </div>
+          <div class="visit__block">
+            <h3 class="h3" data-i18n="visit.contact">Phone / WhatsApp</h3>
+            <p><a class="link" href="tel:+601164122877">+60 11-6412 2877</a></p>
+          </div>
+        </div>
+        <div class="actions">
+          <a class="ba-btn ba-btn--primary" href="https://www.google.com/maps/search/?api=1&query=Brew+Addict+Cafe+Jalan+Sinisian+Kundasang" target="_blank" rel="noopener" data-i18n="cta.directions">Get directions</a>
+          <a class="ba-btn ba-btn--outline" href="https://www.foodpanda.my/restaurant/hcd2/brew-addict-kundasang-hcd2" target="_blank" rel="noopener" data-link="foodpanda" data-i18n="cta.foodpanda">Order on foodpanda</a>
+          <a class="ba-btn ba-btn--outline" href="https://wa.me/601164122877" target="_blank" rel="noopener" data-i18n="cta.whatsapp">WhatsApp us</a>
+        </div>
+      </div>
+      <footer class="site-footer">
+        <div class="wrap footer-row">
+          <span class="ba-wordmark footer-mark">brew<br>addict</span>
+          <p class="muted">© <span id="year">2026</span> Brew Addict Café, Kundasang</p>
+        </div>
+      </footer>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
