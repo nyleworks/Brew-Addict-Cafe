@@ -60,6 +60,16 @@ a { color: inherit; }
 .skip { position: absolute; left: -9999px; top: 0; z-index: 100; padding: var(--space-2) var(--space-4); background: var(--ink); color: var(--surface-100); }
 .skip:focus { left: var(--space-4); top: var(--space-2); }
 
+/* ---------- Opening: the night screen opens up as a circle from the middle of the screen ---------- */
+
+@property --iris { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
+.intro { position: fixed; inset: 0; z-index: 200; pointer-events: none; background: var(--surface-night);
+  -webkit-mask: radial-gradient(circle at 50% 50%, transparent var(--iris), #000 calc(var(--iris) + .5%));
+  mask: radial-gradient(circle at 50% 50%, transparent var(--iris), #000 calc(var(--iris) + .5%));
+  animation: iris-open 1.2s cubic-bezier(.7, 0, .3, 1) .3s forwards; }
+@keyframes iris-open { to { --iris: 100%; visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) { .intro { display: none; } }
+
 /* ---------- Components (from the design system's bundle.css) ---------- */
 
 .ba-wordmark { font-family: var(--font-sans); font-weight: 600; letter-spacing: -0.03em; line-height: .92; text-transform: lowercase; text-decoration: none; }
