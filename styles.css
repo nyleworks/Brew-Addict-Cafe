@@ -159,8 +159,11 @@ a { color: inherit; }
 
 .scroll-clock { position: fixed; top: 0; right: max(12px, env(safe-area-inset-right, 0px)); z-index: 9; display: none;
   padding: 0; border: 0; background: none; font: inherit; color: var(--ink); cursor: pointer;
-  transform: translateY(var(--clock-y, 96px)); will-change: transform; }
+  transform: translateY(var(--clock-y, 96px)); will-change: transform;
+  opacity: 0; visibility: hidden; transition: opacity .35s ease, visibility 0s linear .35s; }
 .js-sky .scroll-clock { display: block; }
+/* The clock only shows from halfway down the page (script.js paintClock adds .is-shown) */
+.scroll-clock.is-shown { opacity: 1; visibility: visible; transition: opacity .35s ease, visibility 0s; }
 .scroll-clock svg { display: block; }
 /* A larger invisible hit area, so the small clock is easy to tap */
 .scroll-clock::after { content: ""; position: absolute; inset: -10px; }

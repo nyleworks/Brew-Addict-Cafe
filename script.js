@@ -331,6 +331,8 @@
     var travel = window.innerHeight - headerH - clockEl.offsetHeight - 32;
     var p = Math.min(1, window.scrollY / max);
     clockEl.style.setProperty("--clock-y", Math.round(headerH + 16 + Math.max(0, travel) * p) + "px");
+    // The clock appears once you're halfway down the page
+    clockEl.classList.toggle("is-shown", p >= 0.5);
     // At the very bottom, the up arrow rises out of the clock
     clockEl.classList.toggle("is-end", window.scrollY >= max - 4);
   }
