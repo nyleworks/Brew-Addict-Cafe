@@ -10,8 +10,8 @@
 
   // The two web app URLs from the Apps Script deployments (both end in /exec). Left empty, the card runs in
   // preview mode: saved on this device only, with buttons that pretend to be the staff.
-  var STAMP_API = "";   // public deployment: looks up a card's stamps
-  var STAFF_URL = "";   // staff deployment: the staff page
+  var STAMP_API = "https://script.google.com/macros/s/AKfycbwCjEXeP72AaBCnvS3u0a-ozlrlWQSot3t6jqPDVIVlglmRchja2RIdLFcYjwOvvgo7/exec";   // public deployment: looks up a card's stamps
+  var STAFF_URL = "https://script.google.com/macros/s/AKfycbwHNN-h9TviJ1A9mMAr-mvKgWMC66NWMfq4pKhpEMl3g8z2jaAmLKRoyoR97w1QJEE-/exec";   // staff deployment: the staff page
 
   var SIZE = 10;
   var CARD_KEY = "ba-card";
