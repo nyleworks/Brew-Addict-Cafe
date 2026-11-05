@@ -40,7 +40,14 @@
       home: "Want your card on your home screen? Tap below first, so your stamps come with it.",
       homeBtn: "Add my card to the home screen",
       homeNext: "Ready. Now tap the Share button (or your browser's menu) and choose Add to Home Screen. Your card and stamps come with it.",
-      homeMissing: "Opened from your home screen and your stamps are missing? Remove this icon, open the card in your browser, tap \u201cAdd my card to the home screen\u201d, then add it again.",
+      homeMissing: "Opened from your home screen and your stamps are missing? In your browser, open the card and tap \u201cCopy my card link\u201d. Then come back here and tap below.",
+      haveCard: "Already have a card with stamps on another app or browser? Copy its card link there, then tap below.",
+      pasteBtn: "Paste my card link",
+      pasteBad: "That isn't a card link. In your browser, open the card and tap \u201cCopy my card link\u201d first.",
+      pasteManual: "Paste your card link here:",
+      copyBtn: "Copy my card link",
+      copied: "Card link copied. Keep it somewhere safe, or paste it into the home screen app.",
+      copyManual: "Copy your card link:",
       restored: "Your card is back on this phone.",
       replace: "This phone already has a card with {n} stamps. Replace it with the card you just scanned?",
       staffOn: "This phone is now the staff phone. Scanning a customer's card will open the staff page.",
@@ -70,7 +77,14 @@
       home: "Mahu kad anda di skrin utama? Tekan di bawah dahulu supaya setem anda ikut sekali.",
       homeBtn: "Tambah kad saya ke skrin utama",
       homeNext: "Sedia. Sekarang tekan butang Kongsi (atau menu pelayar) dan pilih Tambah ke Skrin Utama. Kad dan setem anda ikut sekali.",
-      homeMissing: "Dibuka dari skrin utama dan setem anda tiada? Buang ikon ini, buka kad dalam pelayar, tekan \u201cTambah kad saya ke skrin utama\u201d, kemudian tambah semula.",
+      homeMissing: "Dibuka dari skrin utama dan setem anda tiada? Dalam pelayar, buka kad dan tekan \u201cSalin pautan kad saya\u201d. Kemudian kembali ke sini dan tekan di bawah.",
+      haveCard: "Sudah ada kad dengan setem dalam aplikasi atau pelayar lain? Salin pautan kadnya di sana, kemudian tekan di bawah.",
+      pasteBtn: "Tampal pautan kad saya",
+      pasteBad: "Itu bukan pautan kad. Dalam pelayar, buka kad dan tekan \u201cSalin pautan kad saya\u201d dahulu.",
+      pasteManual: "Tampal pautan kad anda di sini:",
+      copyBtn: "Salin pautan kad saya",
+      copied: "Pautan kad disalin. Simpan dengan selamat, atau tampal dalam aplikasi skrin utama.",
+      copyManual: "Salin pautan kad anda:",
       restored: "Kad anda sudah kembali pada telefon ini.",
       replace: "Telefon ini sudah ada kad dengan {n} setem. Gantikan dengan kad yang baru diimbas?",
       staffOn: "Telefon ini kini telefon staf. Imbasan kad pelanggan akan membuka halaman staf.",
@@ -87,8 +101,10 @@
   function validCode(c) { return typeof c === "string" && /^[A-Za-z0-9_-]{22}$/.test(c); }
 
   // ---- Arriving from a scanned QR code (#card=…) or the staff phone set-up link (#staff-phone=on|off) ----
+  // The card can arrive in the hash (a scanned QR code) or the query (the address a home screen icon opens with)
   var hash = new URLSearchParams(location.hash.slice(1));
-  var scanned = hash.get("card");
+  var query = new URLSearchParams(location.search);
+  var scanned = hash.get("card") || query.get("card");
   var staffSetting = hash.get("staff-phone");
   if (validCode(scanned) && STAFF_URL && load(STAFF_KEY) === "1") {
     // The staff phone hands the card straight to the staff page
@@ -260,10 +276,12 @@
     }
     if (c.freeDrinks > 0) h += '<p class="stamp-muted stamp-note">' + esc(tr("earned", { n: c.freeDrinks })) + "</p>";
     h += '<p class="stamp-muted stamp-small">' + esc(tr("backup")) + "</p>" +
-      (standalone()
-        ? (c.stamps === 0 && !c.freeDrinks ? '<p class="stamp-muted stamp-small">' + esc(tr("homeMissing")) + "</p>" : "")
-        : '<p class="stamp-muted stamp-small">' + esc(tr("home")) + "</p>" +
-          '<button class="stamp-link" type="button" data-act="home">' + esc(tr("homeBtn")) + "</button>") +
+      // An empty card may just mean this is a new home screen icon: offer to bring an existing card over
+      (c.stamps === 0 && !c.freeDrinks ? '<p class="stamp-muted stamp-small">' + esc(tr(standalone() ? "homeMissing" : "haveCard")) + "</p>" +
+        '<button class="stamp-link" type="button" data-act="paste">' + esc(tr("pasteBtn")) + "</button>" : "") +
+      (standalone() ? "" : '<p class="stamp-muted stamp-small">' + esc(tr("home")) + "</p>" +
+        '<button class="stamp-link" type="button" data-act="home">' + esc(tr("homeBtn")) + "</button>" +
+        '<button class="stamp-link" type="button" data-act="copy">' + esc(tr("copyBtn")) + "</button>") +
       '<p class="stamp-muted stamp-small">' + esc(tr("privacy")) + "</p>";
     body.innerHTML = h;
     state.fresh = -1;   // the stamp animation plays once
@@ -299,10 +317,27 @@
     else if (act === "home") {
       // A home screen icon gets its own storage on iPhones. Putting the card in the address now means the icon
       // opens with this card (the icon remembers the address it was added from).
-      history.replaceState(null, "", location.pathname + location.search + "#card=" + state.code);
+      // Added as ?card=… because a home screen icon may drop the part after #
+      history.replaceState(null, "", location.pathname + "?card=" + state.code);
       state.msg = { text: tr("homeNext"), ok: true };
       render();
       body.scrollTop = 0;
+    }
+    else if (act === "copy") {
+      var link = cardLink(state.code);
+      (navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(link) : Promise.reject())
+        .then(function () { state.msg = { text: tr("copied"), ok: true }; render(); body.scrollTop = 0; },
+              function () { window.prompt(tr("copyManual"), link); });
+    }
+    else if (act === "paste") {
+      var use = function (text) {
+        var m = /card=([A-Za-z0-9_-]{22})/.exec(text || "");
+        if (!m) { state.msg = { text: tr("pasteBad"), ok: false }; render(); body.scrollTop = 0; return; }
+        state.code = m[1]; store(CARD_KEY, m[1]); state.card = null;
+        state.msg = { text: tr("restored"), ok: true }; render(); body.scrollTop = 0; startLive();
+      };
+      if (navigator.clipboard && navigator.clipboard.readText) navigator.clipboard.readText().then(use, function () { use(window.prompt(tr("pasteManual"))); });
+      else use(window.prompt(tr("pasteManual")));
     }
     else if (act === "sim-stamp") { demoStamp(); check(); }
     else if (act === "sim-free") { demoFree(); check(); }
@@ -344,7 +379,11 @@
   // ---- Start ----
   panel.inert = true;
   tab.hidden = false;
-  if (scanned || staffSetting) history.replaceState(null, "", location.pathname + location.search);
+  if (scanned || staffSetting) {
+    query.delete("card");
+    var qs = query.toString();
+    history.replaceState(null, "", location.pathname + (qs ? "?" + qs : ""));
+  }
 
   if (staffSetting === "on" || staffSetting === "off") {
     store(STAFF_KEY, staffSetting === "on" ? "1" : null);

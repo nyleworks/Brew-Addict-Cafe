@@ -190,6 +190,17 @@
   var progressBar = document.getElementById("scroll-progress");
   var slots = Array.prototype.slice.call(document.querySelectorAll("[data-slot]"));
   var stops = [];
+  var lastSky = "";
+  var skyEls = Array.prototype.slice.call(document.querySelectorAll(".site-header, .sky, .stamp-tab"));
+  // Sizes read once per layout change, so scrolling never has to ask the browser to lay the page out again
+  var layoutCache = { max: 1, headerH: 72, clockH: 48, vh: window.innerHeight };
+  function measureLayout() {
+    layoutCache.vh = window.innerHeight;
+    layoutCache.max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    layoutCache.headerH = header ? header.offsetHeight : 72;
+    var ck = document.getElementById("scroll-clock");
+    layoutCache.clockH = (ck && ck.offsetHeight) || 48;
+  }
 
   function hexToRgb(hex) {
     hex = hex.trim().replace("#", "");
@@ -268,8 +279,12 @@
     return stops.length - 1 + clamp01((y - last.top) / Math.max(1, last.bottom - last.top));
   }
 
+  var lastIdx = -1;
   function paintIcon(idx) {
     if (!sun) return;
+    idx = Math.round(idx * 500) / 500;
+    if (idx === lastIdx) return;
+    lastIdx = idx;
     var set = clamp01((idx - 1.25) / 0.75);   // afternoon → dusk: the sun sinks behind the horizon
     var rise = clamp01((idx - 2.05) / 0.6);   // after 7 PM the crescent comes up
     var spin = Math.min(idx, 1.25) * 40;      // rays turn slowly through the day
@@ -323,17 +338,19 @@
 
   function paintClock() {
     if (!clockEl) return;
-    var max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-    var mins = scrollMinutes(max);
-    clockHour.setAttribute("transform", "rotate(" + ((mins / 60) % 12 * 30).toFixed(2) + " 24 24)");
-    clockMin.setAttribute("transform", "rotate(" + ((mins % 60) * 6).toFixed(2) + " 24 24)");
-    // Ride down the right edge like a scroll thumb, between the header and the bottom of the screen
-    var headerH = header ? header.offsetHeight : 72;
-    var travel = window.innerHeight - headerH - clockEl.offsetHeight - 32;
+    var max = layoutCache.max;
     var p = Math.min(1, window.scrollY / max);
-    clockEl.style.setProperty("--clock-y", Math.round(headerH + 16 + Math.max(0, travel) * p) + "px");
-    // The clock appears once you're halfway down the page
+    // The clock appears once you're halfway down the page; while it's hidden there's nothing to draw
     clockEl.classList.toggle("is-shown", p >= 0.5);
+    if (p < 0.45) return;
+    var mins = scrollMinutes(max);
+    // CSS rotations (not SVG attributes), which Safari can redraw without laying the drawing out again
+    clockHour.style.transform = "rotate(" + ((mins / 60) % 12 * 30).toFixed(1) + "deg)";
+    clockMin.style.transform = "rotate(" + ((mins % 60) * 6).toFixed(1) + "deg)";
+    // Ride down the right edge like a scroll thumb, between the header and the bottom of the screen
+    var headerH = layoutCache.headerH;
+    var travel = layoutCache.vh - headerH - layoutCache.clockH - 32;
+    clockEl.style.transform = "translate3d(0," + Math.round(headerH + 16 + Math.max(0, travel) * p) + "px,0)";
     // At the very bottom, the up arrow rises out of the clock
     clockEl.classList.toggle("is-end", window.scrollY >= max - 4);
   }
@@ -402,8 +419,9 @@
     if (docked) { heroMark.style.visibility = "hidden"; return; }
     var e = easeInOut(t);
     heroMark.style.transform = "translate3d(" + (m.x0 + (m.x1 - m.x0) * e).toFixed(1) + "px," + (m.y0 + (m.y1 - m.y0) * e).toFixed(1) + "px,0) scale(" + (1 + (m.s1 - 1) * e).toFixed(4) + ")";
-    heroMark.style.color = isNight ? "var(--ink-on-night)" : "";
-    heroMark.style.visibility = "visible";
+    var col = isNight ? "var(--ink-on-night)" : "";
+    if (heroMark.style.color !== col) heroMark.style.color = col;
+    if (heroMark.style.visibility !== "visible") heroMark.style.visibility = "visible";
   }
 
   function paintHero() {
@@ -451,7 +469,13 @@
     paintIcon(dayIndex(mid));
     paintClock();
     var rgb = skyAt(mid);
-    root.style.setProperty("--sky", "rgb(" + rgb.join(",") + ")");
+    var sky = "rgb(" + rgb.join(",") + ")";
+    if (sky !== lastSky) {
+      // Set on the few elements that use it, not on the page root: a change on the root makes Safari restyle
+      // the whole page on every scroll frame
+      lastSky = sky;
+      skyEls.forEach(function (el) { el.style.setProperty("--sky", sky); });
+    }
     // Switch all text to whichever ink reads better on the current sky
     var night = contrast(rgb, INK_NIGHT) > contrast(rgb, INK_DAY);
     if (night !== isNight) {
@@ -460,8 +484,8 @@
       root.classList.toggle("is-night", night);   // for fixed widgets outside the sections (stamp card)
       if (topoSegs) drawTopo(true);
     }
-    var max = document.documentElement.scrollHeight - window.innerHeight;
-    if (progressBar) progressBar.style.setProperty("--progress", max > 0 ? Math.min(1, window.scrollY / max) : 0);
+    var max = layoutCache.max;
+    if (progressBar) progressBar.style.setProperty("--progress", max > 0 ? Math.min(1, window.scrollY / max).toFixed(4) : 0);
   }
 
   // ---- Mount Kinabalu contour lines behind the page ----
@@ -606,6 +630,7 @@
   var ready = false;
   function relayout() {
     if (!ready) return;
+    measureLayout();
     measure();
     measureHero();
     paintSky();
@@ -620,12 +645,22 @@
     window.setTimeout(function () {
       (window.requestIdleCallback || function (fn) { fn(); })(function () { drawTopo(true); }, { timeout: 800 });
     }, 0);
-    var resizeQueued = false;
+    // Phones resize the window whenever their toolbar slides in or out while scrolling. Re-measuring then would
+    // stall the scroll, so a height-only change waits until the resizing has stopped.
+    var resizeQueued = false, lastW = window.innerWidth, heightTimer = 0;
     window.addEventListener("resize", function () {
+      if (window.innerWidth === lastW) {
+        clearTimeout(heightTimer);
+        heightTimer = setTimeout(function () { relayout(); if (topoSegs) drawTopo(); }, 300);
+        return;
+      }
+      lastW = window.innerWidth;
       if (resizeQueued) return;
       resizeQueued = true;
       window.requestAnimationFrame(function () { resizeQueued = false; relayout(); if (topoSegs) drawTopo(); });
     });
+    // The page can grow after it loads (images, the menu); keep the scroll length up to date
+    if (window.ResizeObserver) new ResizeObserver(function () { measureLayout(); }).observe(document.body);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
     window.addEventListener("load", relayout);
   }

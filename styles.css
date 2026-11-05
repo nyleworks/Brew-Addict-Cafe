@@ -165,6 +165,7 @@ a { color: inherit; }
 /* The clock only shows from halfway down the page (script.js paintClock adds .is-shown) */
 .scroll-clock.is-shown { opacity: 1; visibility: visible; transition: opacity .35s ease, visibility 0s; }
 .scroll-clock svg { display: block; }
+#scroll-clock-hour, #scroll-clock-min { transform-box: view-box; transform-origin: 24px 24px; }
 /* A larger invisible hit area, so the small clock is easy to tap */
 .scroll-clock::after { content: ""; position: absolute; inset: -10px; }
 .scroll-clock:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; border-radius: 50%; }
