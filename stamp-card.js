@@ -37,7 +37,10 @@
       live: "Live: new stamps appear here",
       paused: "Check for stamps",
       backup: "Keep a screenshot of this card. If your phone ever loses it, scan the screenshot with your camera to bring it back.",
-      home: "Tip: add this site to your home screen so your phone keeps your card.",
+      home: "Want your card on your home screen? Tap below first, so your stamps come with it.",
+      homeBtn: "Add my card to the home screen",
+      homeNext: "Ready. Now tap the Share button (or your browser's menu) and choose Add to Home Screen. Your card and stamps come with it.",
+      homeMissing: "Opened from your home screen and your stamps are missing? Remove this icon, open the card in your browser, tap \u201cAdd my card to the home screen\u201d, then add it again.",
       restored: "Your card is back on this phone.",
       replace: "This phone already has a card with {n} stamps. Replace it with the card you just scanned?",
       staffOn: "This phone is now the staff phone. Scanning a customer's card will open the staff page.",
@@ -64,7 +67,10 @@
       live: "Langsung: setem baharu muncul di sini",
       paused: "Semak setem",
       backup: "Simpan tangkapan skrin kad ini. Jika telefon anda kehilangannya, imbas tangkapan skrin itu dengan kamera untuk mendapatkannya semula.",
-      home: "Tip: tambah laman ini ke skrin utama supaya telefon anda menyimpan kad anda.",
+      home: "Mahu kad anda di skrin utama? Tekan di bawah dahulu supaya setem anda ikut sekali.",
+      homeBtn: "Tambah kad saya ke skrin utama",
+      homeNext: "Sedia. Sekarang tekan butang Kongsi (atau menu pelayar) dan pilih Tambah ke Skrin Utama. Kad dan setem anda ikut sekali.",
+      homeMissing: "Dibuka dari skrin utama dan setem anda tiada? Buang ikon ini, buka kad dalam pelayar, tekan \u201cTambah kad saya ke skrin utama\u201d, kemudian tambah semula.",
       restored: "Kad anda sudah kembali pada telefon ini.",
       replace: "Telefon ini sudah ada kad dengan {n} setem. Gantikan dengan kad yang baru diimbas?",
       staffOn: "Telefon ini kini telefon staf. Imbasan kad pelanggan akan membuka halaman staf.",
@@ -125,6 +131,9 @@
   function ensureCode() {
     if (!state.code) { state.code = newCode(); store(CARD_KEY, state.code); }
     return state.code;
+  }
+  function standalone() {
+    return window.navigator.standalone === true || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
   }
   function cardLink(code) { return location.origin + location.pathname + "#card=" + code; }
 
@@ -251,7 +260,10 @@
     }
     if (c.freeDrinks > 0) h += '<p class="stamp-muted stamp-note">' + esc(tr("earned", { n: c.freeDrinks })) + "</p>";
     h += '<p class="stamp-muted stamp-small">' + esc(tr("backup")) + "</p>" +
-      '<p class="stamp-muted stamp-small">' + esc(tr("home")) + "</p>" +
+      (standalone()
+        ? (c.stamps === 0 && !c.freeDrinks ? '<p class="stamp-muted stamp-small">' + esc(tr("homeMissing")) + "</p>" : "")
+        : '<p class="stamp-muted stamp-small">' + esc(tr("home")) + "</p>" +
+          '<button class="stamp-link" type="button" data-act="home">' + esc(tr("homeBtn")) + "</button>") +
       '<p class="stamp-muted stamp-small">' + esc(tr("privacy")) + "</p>";
     body.innerHTML = h;
     state.fresh = -1;   // the stamp animation plays once
@@ -284,6 +296,14 @@
     if (!b) return;
     var act = b.dataset.act;
     if (act === "check") { state.msg = null; startLive(); }
+    else if (act === "home") {
+      // A home screen icon gets its own storage on iPhones. Putting the card in the address now means the icon
+      // opens with this card (the icon remembers the address it was added from).
+      history.replaceState(null, "", location.pathname + location.search + "#card=" + state.code);
+      state.msg = { text: tr("homeNext"), ok: true };
+      render();
+      body.scrollTop = 0;
+    }
     else if (act === "sim-stamp") { demoStamp(); check(); }
     else if (act === "sim-free") { demoFree(); check(); }
   });
