@@ -318,3 +318,110 @@ a { color: inherit; }
 .footer-row { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
 .footer-mark { font-size: 40px; }
 .site-footer .muted { font-size: 14px; line-height: 20px; }
+
+/* ---------- Stamp card: tab on the left edge and the slide-out card (stamp-card.js) ---------- */
+
+.is-night .stamp-tab, .is-night .stamp-panel {
+  --ink: var(--ink-on-night); --ink-muted: var(--ink-on-night-muted); --line: #3d3934; --line-strong: var(--ink-on-night);
+  --paper: var(--surface-night);
+}
+.stamp-tab, .stamp-panel { --paper: var(--surface-100); color: var(--ink); }
+
+/* The tab: a raised cartoon tab hugging the left edge, label reading bottom to top */
+.stamp-tab { position: fixed; left: 0; top: 50%; z-index: 9; display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+  padding: 14px 9px 16px 7px; margin: 0; transform: translateY(-50%); cursor: pointer;
+  background: var(--sky, var(--paper)); border: 2.5px solid var(--ink); border-left: 0; border-radius: 0 16px 16px 0;
+  box-shadow: 4px 4px 0 0 var(--ink); font: 700 12px/1 var(--font-poster); letter-spacing: .14em; text-transform: uppercase;
+  transition: transform .15s cubic-bezier(.3, 1.6, .5, 1), box-shadow .15s cubic-bezier(.3, 1.6, .5, 1); }
+.stamp-tab[hidden] { display: none; }
+.stamp-tab__label { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+.stamp-tab__icon { width: 26px; height: 26px; border-radius: 50%; border: 2px solid currentColor; position: relative; flex: none; }
+.stamp-tab__icon::before, .stamp-dot__mascot { content: ""; position: absolute; inset: 12%; background: currentColor;
+  -webkit-mask: url(images/mascot.png) center / contain no-repeat; mask: url(images/mascot.png) center / contain no-repeat; }
+.stamp-tab__badge { position: absolute; top: -8px; right: -10px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 11px;
+  background: var(--ink); color: var(--paper); font: 800 11px/22px var(--font-poster); letter-spacing: 0; text-align: center; }
+.stamp-tab { overflow: visible; }
+@media (hover: hover) { .stamp-tab:hover { transform: translate(3px, -50%); box-shadow: 6px 4px 0 0 var(--ink); } }
+.stamp-tab:active { transform: translate(4px, calc(-50% + 4px)); box-shadow: 0 0 0 0 var(--ink); transition-duration: .05s; }
+.stamp-tab:focus-visible { outline: 2.5px solid var(--focus); outline-offset: 3px; }
+.stamp-tab.is-hidden { transform: translate(-110%, -50%); }
+@media (max-width: 719px) {
+  .stamp-tab { padding: 10px 7px 12px 5px; font-size: 11px; }
+  .stamp-tab__icon { width: 22px; height: 22px; }
+}
+
+/* The card panel slides in from the left */
+.stamp-scrim { position: fixed; inset: 0; z-index: 29; background: rgba(14, 13, 12, .4); opacity: 0; transition: opacity .25s ease; }
+.stamp-scrim.is-open { opacity: 1; }
+.stamp-panel { position: fixed; left: 0; top: calc(var(--header-h) + 12px); z-index: 30; width: min(380px, calc(100vw - 20px));
+  max-height: calc(100vh - var(--header-h) - 24px); max-height: calc(100svh - var(--header-h) - 24px); overflow-y: auto; overscroll-behavior: contain;
+  padding: var(--space-4) var(--space-6) var(--space-6); padding-left: max(var(--space-6), env(safe-area-inset-left, 0px));
+  background: var(--paper); border: 2.5px solid var(--ink); border-left: 0; border-radius: 0 22px 22px 0;
+  box-shadow: 6px 6px 0 0 var(--ink); transform: translateX(-105%); visibility: hidden;
+  transition: transform .4s cubic-bezier(.3, 1.25, .5, 1), visibility 0s linear .4s; }
+.stamp-panel.is-open { transform: none; visibility: visible; transition: transform .4s cubic-bezier(.3, 1.25, .5, 1), visibility 0s; }
+.stamp-panel[hidden] { display: block; }
+.stamp-panel__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); }
+.stamp-panel__title { font: 800 24px/1.05 var(--font-poster); text-transform: uppercase; }
+.stamp-panel__close { display: grid; place-items: center; width: 40px; height: 40px; margin-right: -8px; border: 0; border-radius: 50%;
+  background: none; color: inherit; cursor: pointer; }
+.stamp-panel__close:focus-visible { outline: 2px solid var(--focus); }
+.stamp-panel p { font-size: 15px; line-height: 22px; }
+.stamp-muted { color: var(--ink-muted); }
+.stamp-hi { font: 600 20px/1.2 var(--font-sans); margin-bottom: var(--space-1); }
+.stamp-note { margin-top: var(--space-3); }
+.stamp-msg { margin-top: var(--space-4); padding: 10px 14px; border: 2px solid var(--ink); border-radius: 14px; font-weight: 600; }
+.stamp-msg--ok { background: var(--ink); color: var(--paper); }
+.stamp-demo { margin-bottom: var(--space-4); padding: 8px 12px; border: 1.5px dashed var(--ink-muted); border-radius: 12px; font-size: 13px !important; line-height: 18px !important; color: var(--ink-muted); }
+.stamp-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-6); }
+.stamp-actions .ba-btn { justify-content: center; }
+.stamp-link { margin-top: var(--space-4); padding: 0; border: 0; background: none; color: var(--ink-muted); font: 600 14px/1 var(--font-sans);
+  text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.stamp-panel .ba-btn--primary { --btn-fill: var(--ink); --btn-text: var(--paper); --btn-edge: var(--ink); --btn-ledge: var(--ink-muted); }
+.stamp-panel .ba-btn--outline { --btn-fill: var(--paper); --btn-text: var(--ink); --btn-edge: var(--ink); --btn-ledge: var(--ink); }
+
+/* The ten stamps: the mascot inside a circle */
+.stamp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: var(--space-4) 0 var(--space-2); padding: 0; list-style: none; }
+.stamp-dot { position: relative; aspect-ratio: 1; border-radius: 50%; border: 2px dashed var(--line-strong); opacity: .55;
+  display: grid; place-items: center; font: 800 13px/1 var(--font-poster); color: var(--ink-muted); }
+.stamp-dot__mascot { inset: 14%; opacity: 0; }
+.stamp-dot.is-on { opacity: 1; border: 2.5px solid var(--ink); color: var(--ink); transform: rotate(var(--tilt, -6deg)); }
+.stamp-dot.is-on .stamp-dot__num { display: none; }
+.stamp-dot.is-on .stamp-dot__mascot { opacity: 1; }
+.stamp-dot--free::after { content: attr(data-free); position: absolute; top: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+  font: 700 9px/1 var(--font-poster); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); white-space: nowrap; }
+.stamp-dot.is-on.stamp-dot--free::after { transform: translateX(-50%) rotate(calc(var(--tilt, -6deg) * -1)); }
+/* A new stamp thumps down like a rubber stamp, with an ink ring spreading out */
+.stamp-dot.is-new { animation: stamp-thud .6s cubic-bezier(.2, .9, .3, 1.2) both; }
+.stamp-dot.is-new::before { content: ""; position: absolute; inset: -2px; border-radius: 50%; border: 3px solid var(--ink);
+  animation: stamp-ring .7s ease-out .22s both; }
+@keyframes stamp-thud {
+  0% { transform: scale(2.4) rotate(-24deg); opacity: 0; }
+  45% { transform: scale(.86) rotate(4deg); opacity: 1; }
+  70% { transform: scale(1.07) rotate(calc(var(--tilt, -6deg) - 2deg)); }
+  100% { transform: scale(1) rotate(var(--tilt, -6deg)); opacity: 1; }
+}
+@keyframes stamp-ring { from { transform: scale(1); opacity: .9; } to { transform: scale(1.7); opacity: 0; } }
+.stamp-grid.is-full { animation: stamp-cheer .8s ease .5s both; }
+@keyframes stamp-cheer { 0%, 100% { transform: none; } 20% { transform: rotate(-2deg) scale(1.02); } 40% { transform: rotate(2deg) scale(1.03); } 60% { transform: rotate(-1deg); } }
+.stamp-progress { font: 800 15px/1.2 var(--font-poster); text-transform: uppercase; letter-spacing: .04em; margin-top: var(--space-4); }
+
+/* Forms */
+.stamp-switch { display: inline-flex; margin: var(--space-2) 0 var(--space-4); border: 2px solid var(--ink); border-radius: var(--radius-pill); padding: 2px; }
+.stamp-switch button { border: 0; background: none; color: var(--ink); padding: 9px 16px; border-radius: var(--radius-pill);
+  font: 700 12px/1 var(--font-poster); letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
+.stamp-switch button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.stamp-form { display: grid; gap: var(--space-3); }
+.stamp-form label { display: grid; gap: 6px; font: 600 14px/1.2 var(--font-sans); }
+.stamp-form input { width: 100%; padding: 12px 14px; border: 2px solid var(--ink); border-radius: 12px; background: var(--paper); color: var(--ink);
+  font: 500 16px/1.2 var(--font-sans); }
+.stamp-form input:focus { outline: 2.5px solid var(--focus); outline-offset: 2px; }
+.stamp-form .ba-btn { justify-content: center; margin-top: var(--space-2); }
+.stamp-error { color: var(--ink); font-weight: 600; font-size: 14px; }
+.stamp-error::before { content: "! "; font-family: var(--font-poster); }
+.stamp-busy { opacity: .55; pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .stamp-tab, .stamp-panel, .stamp-scrim { transition: none; }
+  .stamp-dot.is-new, .stamp-dot.is-new::before, .stamp-grid.is-full { animation: none; }
+}

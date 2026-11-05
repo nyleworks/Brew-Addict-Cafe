@@ -146,6 +146,7 @@
     });
     renderMenu();
     tick();
+    document.dispatchEvent(new CustomEvent("ba:lang", { detail: lang }));   // stamp-card.js re-renders
     relayout();   // text lengths changed, so the hero's measurements did too
   }
 
@@ -456,6 +457,7 @@
     if (night !== isNight) {
       isNight = night;
       themed.forEach(function (el) { el.classList.toggle("ba-on-night", night); });
+      root.classList.toggle("is-night", night);   // for fixed widgets outside the sections (stamp card)
       if (topoSegs) drawTopo(true);
     }
     var max = document.documentElement.scrollHeight - window.innerHeight;

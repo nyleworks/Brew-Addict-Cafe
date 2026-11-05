@@ -115,6 +115,22 @@
     </svg>
   </button>
 
+  <!-- Stamp card: a tab on the left edge opens the card (stamp-card.js) -->
+  <button type="button" class="stamp-tab" id="stamp-tab" aria-controls="stamp-panel" aria-expanded="false" hidden>
+    <span class="stamp-tab__icon" aria-hidden="true"></span>
+    <span class="stamp-tab__label" id="stamp-tab-label">Stamp card</span>
+  </button>
+  <div class="stamp-scrim" id="stamp-scrim" hidden></div>
+  <aside class="stamp-panel" id="stamp-panel" aria-labelledby="stamp-title" hidden>
+    <div class="stamp-panel__head">
+      <h2 class="stamp-panel__title" id="stamp-title">Stamp card</h2>
+      <button type="button" class="stamp-panel__close" id="stamp-close" aria-label="Close">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <div class="stamp-panel__body" id="stamp-body"></div>
+  </aside>
+
   <main id="main">
     <!-- 10:00 AM · Doors open -->
     <section class="slot slot--1000 hero-scroll" id="top" data-slot="0">
@@ -257,5 +273,6 @@
   </main>
 
   <script src="script.js"></script>
+  <script src="stamp-card.js"></script>
 </body>
 </html>
