@@ -1,85 +1,94 @@
 // Brew Addict Café: stamp card.
-// A tab on the left edge opens the card. Customers sign up with name, phone and PIN; after paying they scan
-// the counter QR code (it opens this site with ?stamp=CODE) and get one stamp a day. 10 stamps = a free drink.
-// The data lives in a Google Sheet behind a Google Apps Script web app (apps-script/Code.gs).
+// No sign-up: each phone gets a card that is a random code, shown as a QR code. After paying, the customer shows
+// the QR and staff scan it with the cafe phone, which opens the staff page (only works signed in to the cafe
+// Google account). While the card is open it checks for new stamps every few seconds, so it updates live.
+// 10 stamps = a free drink. One stamp a day. A card lasts one month from its first stamp.
+// Backend: apps-script/Code.gs (Google Sheet). Setup: STAMP-CARD-SETUP.md.
 
 (function () {
   "use strict";
 
-  // Paste the Apps Script web app URL here (ends in /exec). Left empty, the card runs in preview mode:
-  // everything is saved on this device only, so the design can be tried before the sheet is set up.
-  var STAMP_API = "";
+  // The two web app URLs from the Apps Script deployments (both end in /exec). Left empty, the card runs in
+  // preview mode: saved on this device only, with buttons that pretend to be the staff.
+  var STAMP_API = "";   // public deployment: looks up a card's stamps
+  var STAFF_URL = "";   // staff deployment: the staff page
 
   var SIZE = 10;
-  var TOKEN_KEY = "ba-stamp-token";
-  var PENDING_KEY = "ba-stamp-pending";
+  var CARD_KEY = "ba-card";
+  var STAFF_KEY = "ba-staff-phone";
+  var POLL_MS = 3000;            // how often an open card checks for stamps
+  var POLL_FOR_MS = 3 * 60000;   // then it pauses until the customer taps "Check for stamps"
 
   var S = {
     en: {
       tab: "Stamp card", title: "Stamp card", close: "Close",
       intro: "Collect 10 stamps and get any drink free.",
-      how: "After you pay, scan the QR code at the counter. One stamp a day.",
-      signup: "Sign up", signin: "Sign in",
-      name: "Your name", phone: "Phone number", pin: "PIN (4–6 digits)", pin2: "Confirm PIN",
-      create: "Create my card", go: "Sign in",
-      pending: "Sign up or sign in to collect today's stamp.",
-      hi: "Hi, {name}", count: "{n} of 10 stamps",
+      privacy: "No sign-up. We don't ask for your name or phone number.",
+      how: "After you pay, show this QR code at the counter and our staff will stamp it. One stamp a day.",
+      qrAlt: "Your stamp card QR code",
+      count: "{n} of 10 stamps",
       ends: "This card ends on {date}.",
-      fresh: "Your next stamp starts a new card. Each card lasts one month from its first stamp.",
+      fresh: "Each card lasts one month from its first stamp.",
       today: "Today's stamp is collected. See you tomorrow!",
-      full: "Your free drink is ready! Show this card to our staff.",
-      claim: "Claim free drink", staffPin: "Staff PIN", confirm: "Confirm", cancel: "Cancel",
-      staffHelp: "For staff: enter the staff PIN to give the free drink.",
-      redeemed: "Enjoy your free drink! Your next purchase starts a new card.",
+      full: "Your free drink is ready! Show this QR code to our staff.",
       stamped: "Stamp added! {n} of 10.",
+      redeemed: "Enjoy your free drink! A new card has started.",
       earned: "Free drinks so far: {n}", free: "Free",
-      signout: "Sign out", loading: "Loading your card…",
-      demo: "Preview mode: cards are saved on this device only, and the daily limit is off. The staff PIN is 0000.",
-      simulate: "Try a QR scan",
-      e: {
-        name: "Please enter your name.", phone: "Please enter a valid Malaysian phone number.",
-        pin: "The PIN must be 4 to 6 digits.", pin2: "The two PINs don't match.",
-        exists: "This number already has a card. Please sign in.", no_account: "No card for this number yet. Please sign up.",
-        wrong_pin: "Wrong PIN. Please try again.", locked: "Too many tries. Please wait 15 minutes.",
-        today: "You've already collected today's stamp. See you tomorrow!", full: "Your card is full. Claim your free drink first.",
-        bad_code: "That QR code didn't work. Please ask our staff.", staff_pin: "Wrong staff PIN.",
-        not_full: "This card isn't full yet.", signed_out: "You've been signed out. Please sign in again.",
-        network: "Couldn't connect. Check your internet and try again.", server: "Something went wrong. Please try again."
-      }
+      live: "Live: new stamps appear here",
+      paused: "Check for stamps",
+      backup: "Keep a screenshot of this card. If your phone ever loses it, scan the screenshot with your camera to bring it back.",
+      home: "Tip: add this site to your home screen so your phone keeps your card.",
+      restored: "Your card is back on this phone.",
+      replace: "This phone already has a card with {n} stamps. Replace it with the card you just scanned?",
+      staffOn: "This phone is now the staff phone. Scanning a customer's card will open the staff page.",
+      staffOff: "This phone is no longer the staff phone.",
+      loading: "Loading your card…",
+      demo: "Preview mode: this card is saved on this device only. The buttons below pretend to be the staff.",
+      simStamp: "Pretend staff stamped it", simFree: "Pretend staff gave the free drink",
+      network: "Couldn't check your card. Check your internet and try again."
     },
     ms: {
       tab: "Kad setem", title: "Kad setem", close: "Tutup",
       intro: "Kumpul 10 setem dan dapat satu minuman percuma.",
-      how: "Selepas bayar, imbas kod QR di kaunter. Satu setem sehari.",
-      signup: "Daftar", signin: "Log masuk",
-      name: "Nama anda", phone: "Nombor telefon", pin: "PIN (4–6 digit)", pin2: "Sahkan PIN",
-      create: "Buat kad saya", go: "Log masuk",
-      pending: "Daftar atau log masuk untuk kumpul setem hari ini.",
-      hi: "Hai, {name}", count: "{n} daripada 10 setem",
+      privacy: "Tiada pendaftaran. Kami tidak minta nama atau nombor telefon anda.",
+      how: "Selepas bayar, tunjukkan kod QR ini di kaunter dan staf kami akan mengecopnya. Satu setem sehari.",
+      qrAlt: "Kod QR kad setem anda",
+      count: "{n} daripada 10 setem",
       ends: "Kad ini tamat pada {date}.",
-      fresh: "Setem seterusnya memulakan kad baharu. Setiap kad sah sebulan dari setem pertama.",
+      fresh: "Setiap kad sah sebulan dari setem pertama.",
       today: "Setem hari ini sudah dikumpul. Jumpa esok!",
-      full: "Minuman percuma anda sudah sedia! Tunjukkan kad ini kepada staf kami.",
-      claim: "Tuntut minuman percuma", staffPin: "PIN staf", confirm: "Sahkan", cancel: "Batal",
-      staffHelp: "Untuk staf: masukkan PIN staf untuk beri minuman percuma.",
-      redeemed: "Selamat menikmati minuman percuma! Pembelian seterusnya memulakan kad baharu.",
+      full: "Minuman percuma anda sudah sedia! Tunjukkan kod QR ini kepada staf kami.",
       stamped: "Setem ditambah! {n} daripada 10.",
+      redeemed: "Selamat menikmati minuman percuma! Kad baharu sudah bermula.",
       earned: "Minuman percuma setakat ini: {n}", free: "Percuma",
-      signout: "Log keluar", loading: "Memuatkan kad anda…",
-      demo: "Mod pratonton: kad disimpan pada peranti ini sahaja dan had harian dimatikan. PIN staf ialah 0000.",
-      simulate: "Cuba imbas QR",
-      e: {
-        name: "Sila masukkan nama anda.", phone: "Sila masukkan nombor telefon Malaysia yang sah.",
-        pin: "PIN mesti 4 hingga 6 digit.", pin2: "Kedua-dua PIN tidak sama.",
-        exists: "Nombor ini sudah ada kad. Sila log masuk.", no_account: "Belum ada kad untuk nombor ini. Sila daftar.",
-        wrong_pin: "PIN salah. Sila cuba lagi.", locked: "Terlalu banyak cubaan. Sila tunggu 15 minit.",
-        today: "Anda sudah kumpul setem hari ini. Jumpa esok!", full: "Kad anda sudah penuh. Tuntut minuman percuma dahulu.",
-        bad_code: "Kod QR itu tidak berfungsi. Sila tanya staf kami.", staff_pin: "PIN staf salah.",
-        not_full: "Kad ini belum penuh.", signed_out: "Anda telah dilog keluar. Sila log masuk semula.",
-        network: "Tidak dapat disambung. Semak internet anda dan cuba lagi.", server: "Ada masalah. Sila cuba lagi."
-      }
+      live: "Langsung: setem baharu muncul di sini",
+      paused: "Semak setem",
+      backup: "Simpan tangkapan skrin kad ini. Jika telefon anda kehilangannya, imbas tangkapan skrin itu dengan kamera untuk mendapatkannya semula.",
+      home: "Tip: tambah laman ini ke skrin utama supaya telefon anda menyimpan kad anda.",
+      restored: "Kad anda sudah kembali pada telefon ini.",
+      replace: "Telefon ini sudah ada kad dengan {n} setem. Gantikan dengan kad yang baru diimbas?",
+      staffOn: "Telefon ini kini telefon staf. Imbasan kad pelanggan akan membuka halaman staf.",
+      staffOff: "Telefon ini bukan lagi telefon staf.",
+      loading: "Memuatkan kad anda…",
+      demo: "Mod pratonton: kad ini disimpan pada peranti ini sahaja. Butang di bawah berpura-pura menjadi staf.",
+      simStamp: "Pura-pura staf mengecop", simFree: "Pura-pura staf beri minuman percuma",
+      network: "Tidak dapat menyemak kad anda. Semak internet anda dan cuba lagi."
     }
   };
+
+  function store(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
+  function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function validCode(c) { return typeof c === "string" && /^[A-Za-z0-9_-]{22}$/.test(c); }
+
+  // ---- Arriving from a scanned QR code (#card=…) or the staff phone set-up link (#staff-phone=on|off) ----
+  var hash = new URLSearchParams(location.hash.slice(1));
+  var scanned = hash.get("card");
+  var staffSetting = hash.get("staff-phone");
+  if (validCode(scanned) && STAFF_URL && load(STAFF_KEY) === "1") {
+    // The staff phone hands the card straight to the staff page
+    location.replace(STAFF_URL + "?card=" + encodeURIComponent(scanned));
+    return;
+  }
 
   var tab = document.getElementById("stamp-tab");
   var panel = document.getElementById("stamp-panel");
@@ -88,16 +97,15 @@
   var closeBtn = document.getElementById("stamp-close");
   if (!tab || !panel || !body) return;
 
-  // ---- State ----
   var state = {
-    view: "loading",      // loading | auth | card | staff
-    mode: "signup",       // which auth form
-    card: null,
-    msg: null,            // { text, ok }
-    error: "",
-    busy: false,
-    fresh: -1             // index of a stamp that has just been added (animates once)
+    code: load(CARD_KEY),
+    card: null,        // { stamps, size, expires, stampedToday, freeDrinks }
+    msg: null,         // { text, ok }
+    fresh: -1,         // index of a stamp that has just appeared (animates once)
+    paused: false,
+    error: false
   };
+  if (!validCode(state.code)) state.code = null;
 
   function lang() { return document.documentElement.lang === "ms" ? "ms" : "en"; }
   function tr(key, vars) {
@@ -105,85 +113,69 @@
     if (vars) Object.keys(vars).forEach(function (k) { s = s.replace("{" + k + "}", vars[k]); });
     return s;
   }
-  function errText(code) { return S[lang()].e[code] || S[lang()].e.server; }
-  function store(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
-  function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
-  function sstore(k, v) { try { if (v == null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) {} }
-  function sload(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 
+  // A new card: 16 random bytes as 22 URL-safe characters. Nothing is sent anywhere until staff stamp it.
+  function newCode() {
+    var b = new Uint8Array(16);
+    crypto.getRandomValues(b);
+    var s = btoa(String.fromCharCode.apply(null, b));
+    return s.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+  function ensureCode() {
+    if (!state.code) { state.code = newCode(); store(CARD_KEY, state.code); }
+    return state.code;
+  }
+  function cardLink(code) { return location.origin + location.pathname + "#card=" + code; }
+
   // ---- Talking to the sheet ----
-  function api(action, data) {
-    var req = Object.assign({ action: action }, data || {});
-    if (!STAMP_API) return Promise.resolve(demoApi(req));
+  function fetchCard() {
+    if (!state.code) return Promise.resolve(null);
+    if (!STAMP_API) return Promise.resolve(demoView(demoGet(state.code)));
     // A plain-text POST keeps this a "simple" request, which Apps Script web apps accept from any site
-    return fetch(STAMP_API, { method: "POST", body: JSON.stringify(req), redirect: "follow" })
+    return fetch(STAMP_API, { method: "POST", body: JSON.stringify({ action: "card", card: state.code }), redirect: "follow" })
       .then(function (r) { return r.json(); })
-      .catch(function () { return { ok: false, error: "network" }; });
+      .then(function (r) { return r && r.ok ? r.card : null; })
+      .catch(function () { return null; });
   }
 
   // ---- Preview mode: the same rules, stored on this device ----
-  function demoDb() { try { return JSON.parse(load("ba-stamp-demo") || "{}"); } catch (e) { return {}; } }
-  function demoSave(db) { store("ba-stamp-demo", JSON.stringify(db)); }
-  function normPhone(p) {
-    var d = String(p || "").replace(/\D/g, "");
-    if (d.indexOf("60") === 0) d = d.slice(2);
-    if (d.indexOf("0") === 0) d = d.slice(1);
-    return d.length >= 8 && d.length <= 11 ? "60" + d : "";
-  }
-  function demoView(u) {
+  function demoDb() { try { return JSON.parse(load("ba-card-demo") || "{}"); } catch (e) { return {}; } }
+  function demoGet(code) { return demoDb()[code] || { stamps: 0, cardStart: null, freeDrinks: 0 }; }
+  function demoPut(code, c) { var db = demoDb(); db[code] = c; store("ba-card-demo", JSON.stringify(db)); }
+  function demoView(c) {
     var end = null;
-    if (u.cardStart) { end = new Date(u.cardStart); end.setMonth(end.getMonth() + 1); }
-    return { name: u.name, stamps: u.stamps, size: SIZE, cardStart: u.cardStart, expires: end && end.toISOString(),
-      stampedToday: false, freeDrinks: u.freeDrinks };
+    if (c.cardStart) { end = new Date(c.cardStart); end.setMonth(end.getMonth() + 1); }
+    return { stamps: c.stamps, size: SIZE, expires: c.stamps > 0 && c.stamps < SIZE && end ? end.toISOString() : null,
+      stampedToday: false, freeDrinks: c.freeDrinks };
   }
-  function demoApi(r) {
-    var db = demoDb(), u = null, k;
-    if (r.token) for (k in db) if (db[k].token === r.token) u = db[k];
-    if (u && u.cardStart && u.stamps > 0 && u.stamps < SIZE) {
-      var end = new Date(u.cardStart); end.setMonth(end.getMonth() + 1);
-      if (new Date() >= end) { u.stamps = 0; u.cardStart = null; }
+  function demoStamp() {
+    var c = demoGet(state.code);
+    if (c.stamps >= SIZE) return;
+    if (!c.stamps) c.cardStart = new Date().toISOString();
+    c.stamps++; demoPut(state.code, c);
+  }
+  function demoFree() {
+    var c = demoGet(state.code);
+    if (c.stamps < SIZE) return;
+    c.stamps = 0; c.cardStart = null; c.freeDrinks++; demoPut(state.code, c);
+  }
+
+  // ---- Applying a fresh look at the card: animates a new stamp and says what changed ----
+  function apply(card) {
+    if (!card) { state.error = true; return true; }
+    var before = state.card, changed = !before || state.error ||
+      before.stamps !== card.stamps || before.freeDrinks !== card.freeDrinks || before.stampedToday !== card.stampedToday;
+    state.error = false;
+    if (before) {
+      if (card.freeDrinks > before.freeDrinks) state.msg = { text: tr("redeemed"), ok: true };
+      else if (card.stamps > before.stamps) {
+        state.fresh = card.stamps - 1;
+        state.msg = { text: tr("stamped", { n: card.stamps }), ok: true };
+      }
     }
-    var out;
-    switch (r.action) {
-      case "register":
-        var phone = normPhone(r.phone);
-        if (!String(r.name || "").trim()) out = { ok: false, error: "name" };
-        else if (!phone) out = { ok: false, error: "phone" };
-        else if (!/^\d{4,6}$/.test(r.pin || "")) out = { ok: false, error: "pin" };
-        else if (db[phone]) out = { ok: false, error: "exists" };
-        else {
-          u = db[phone] = { name: String(r.name).trim().slice(0, 60), pin: r.pin, token: "demo-" + Date.now(), stamps: 0, cardStart: null, freeDrinks: 0 };
-          out = { ok: true, token: u.token, card: demoView(u) };
-        }
-        break;
-      case "login":
-        u = db[normPhone(r.phone)];
-        if (!u) out = { ok: false, error: "no_account" };
-        else if (u.pin !== r.pin) out = { ok: false, error: "wrong_pin" };
-        else { u.token = "demo-" + Date.now(); out = { ok: true, token: u.token, card: demoView(u) }; }
-        break;
-      case "card": out = u ? { ok: true, card: demoView(u) } : { ok: false, error: "signed_out" }; break;
-      case "stamp":
-        if (!u) out = { ok: false, error: "signed_out" };
-        else if (u.stamps >= SIZE) out = { ok: false, error: "full", card: demoView(u) };
-        else {
-          if (!u.stamps) u.cardStart = new Date().toISOString();
-          u.stamps++;
-          out = { ok: true, stamped: true, card: demoView(u) };
-        }
-        break;
-      case "redeem":
-        if (!u) out = { ok: false, error: "signed_out" };
-        else if (r.staffPin !== "0000") out = { ok: false, error: "staff_pin" };
-        else if (u.stamps < SIZE) out = { ok: false, error: "not_full" };
-        else { u.stamps = 0; u.cardStart = null; u.freeDrinks++; out = { ok: true, redeemed: true, card: demoView(u) }; }
-        break;
-      case "logout": if (u) u.token = ""; out = { ok: true }; break;
-      default: out = { ok: false, error: "server" };
-    }
-    demoSave(db);
-    return out;
+    state.card = card;
+    return changed;
   }
 
   // ---- Rendering ----
@@ -205,9 +197,18 @@
     return html + "</ol>";
   }
 
-  function msgHtml() {
-    if (!state.msg) return "";
-    return '<p class="stamp-msg' + (state.msg.ok ? " stamp-msg--ok" : "") + '" role="status">' + esc(state.msg.text) + "</p>";
+  var qrCache = { code: null, svg: "" };
+  function qrSvg(code) {
+    if (qrCache.code === code) return qrCache.svg;
+    var svg = "";
+    if (typeof qrcode === "function") {
+      var q = qrcode(0, "M");
+      q.addData(cardLink(code));
+      q.make();
+      svg = q.createSvgTag({ cellSize: 4, margin: 2, scalable: true, alt: tr("qrAlt") });
+    }
+    qrCache = { code: code, svg: svg };
+    return svg;
   }
 
   function render() {
@@ -219,200 +220,127 @@
       if (!badge) { badge = document.createElement("span"); badge.className = "stamp-tab__badge"; tab.appendChild(badge); }
       badge.textContent = state.card.stamps;
     } else if (badge) badge.remove();
+    if (!isOpen) return;
 
-    var demo = STAMP_API ? "" : '<p class="stamp-demo">' + esc(tr("demo")) + "</p>";
-    var h = demo;
-
-    if (state.view === "loading") {
-      h += '<p class="stamp-muted">' + esc(tr("loading")) + "</p>";
-    } else if (state.view === "auth") {
-      var up = state.mode === "signup";
-      h += "<p>" + esc(tr("intro")) + "</p>" +
-        '<p class="stamp-muted stamp-note">' + esc(sload(PENDING_KEY) ? tr("pending") : tr("how")) + "</p>" +
-        '<div class="stamp-switch" role="group">' +
-          '<button type="button" data-mode="signup" aria-pressed="' + up + '">' + esc(tr("signup")) + "</button>" +
-          '<button type="button" data-mode="signin" aria-pressed="' + !up + '">' + esc(tr("signin")) + "</button></div>" +
-        '<form class="stamp-form" id="stamp-form" novalidate>' +
-          (up ? '<label>' + esc(tr("name")) + '<input name="name" autocomplete="name" maxlength="60" required></label>' : "") +
-          '<label>' + esc(tr("phone")) + '<input name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="012-345 6789" required></label>' +
-          '<label>' + esc(tr("pin")) + '<input name="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="' + (up ? "new-password" : "current-password") + '" required></label>' +
-          (up ? '<label>' + esc(tr("pin2")) + '<input name="pin2" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="new-password" required></label>' : "") +
-          (state.error ? '<p class="stamp-error" role="alert">' + esc(state.error) + "</p>" : "") +
-          '<button class="ba-btn ba-btn--primary" type="submit">' + esc(up ? tr("create") : tr("go")) + "</button>" +
-        "</form>";
-    } else if (state.view === "card" || state.view === "staff") {
-      var c = state.card;
-      h += '<p class="stamp-hi">' + esc(tr("hi", { name: c.name })) + "</p>" +
-        '<p class="stamp-muted">' + esc(tr("intro")) + "</p>" +
-        grid(c) +
-        '<p class="stamp-progress">' + esc(tr("count", { n: c.stamps })) + "</p>";
-      if (c.stamps >= SIZE) h += "<p>" + esc(tr("full")) + "</p>";
-      else if (c.expires && c.stamps > 0) h += '<p class="stamp-muted">' + esc(tr("ends", { date: fmtDate(c.expires) })) + "</p>";
-      else h += '<p class="stamp-muted">' + esc(tr("fresh")) + "</p>";
-      if (c.stampedToday && c.stamps < SIZE) h += '<p class="stamp-note">' + esc(tr("today")) + "</p>";
-      h += msgHtml();
-      if (state.view === "staff") {
-        h += '<form class="stamp-form stamp-note" id="staff-form" novalidate>' +
-          '<p class="stamp-muted">' + esc(tr("staffHelp")) + "</p>" +
-          '<label>' + esc(tr("staffPin")) + '<input name="staffPin" type="password" inputmode="numeric" autocomplete="off" required></label>' +
-          (state.error ? '<p class="stamp-error" role="alert">' + esc(state.error) + "</p>" : "") +
-          '<div class="stamp-actions"><button class="ba-btn ba-btn--primary" type="submit">' + esc(tr("confirm")) + "</button>" +
-          '<button class="ba-btn ba-btn--outline" type="button" data-act="cancel">' + esc(tr("cancel")) + "</button></div></form>";
-      } else {
-        h += '<div class="stamp-actions">';
-        if (c.stamps >= SIZE) h += '<button class="ba-btn ba-btn--primary" type="button" data-act="claim">' + esc(tr("claim")) + "</button>";
-        if (!STAMP_API && c.stamps < SIZE) h += '<button class="ba-btn ba-btn--outline" type="button" data-act="simulate">' + esc(tr("simulate")) + "</button>";
-        h += "</div>";
-        if (c.freeDrinks > 0) h += '<p class="stamp-muted stamp-note">' + esc(tr("earned", { n: c.freeDrinks })) + "</p>";
-        h += '<button class="stamp-link" type="button" data-act="signout">' + esc(tr("signout")) + "</button>";
-      }
+    var h = STAMP_API ? "" : '<p class="stamp-demo">' + esc(tr("demo")) + "</p>";
+    var c = state.card;
+    if (!c) {
+      h += state.error ? '<p class="stamp-error" role="alert">' + esc(tr("network")) + "</p>" : '<p class="stamp-muted">' + esc(tr("loading")) + "</p>";
+      if (state.error) h += '<div class="stamp-actions"><button class="ba-btn ba-btn--outline" type="button" data-act="check">' + esc(tr("paused")) + "</button></div>";
+      body.innerHTML = h;
+      return;
     }
+    h += '<p class="stamp-muted">' + esc(tr("intro")) + "</p>" + grid(c) +
+      '<p class="stamp-progress">' + esc(tr("count", { n: c.stamps })) + "</p>";
+    if (c.stamps >= SIZE) h += "<p>" + esc(tr("full")) + "</p>";
+    else if (c.expires) h += '<p class="stamp-muted">' + esc(tr("ends", { date: fmtDate(c.expires) })) + "</p>";
+    else h += '<p class="stamp-muted">' + esc(tr("fresh")) + "</p>";
+    if (c.stampedToday && c.stamps < SIZE) h += '<p class="stamp-note">' + esc(tr("today")) + "</p>";
+    if (state.msg) h += '<p class="stamp-msg' + (state.msg.ok ? " stamp-msg--ok" : "") + '" role="status">' + esc(state.msg.text) + "</p>";
+
+    h += '<div class="stamp-qr">' + qrSvg(state.code) + "</div>" +
+      '<p class="stamp-how">' + esc(tr("how")) + "</p>";
+    if (state.error) h += '<p class="stamp-error" role="alert">' + esc(tr("network")) + "</p>";
+    h += state.paused || state.error
+      ? '<button class="stamp-link" type="button" data-act="check">' + esc(tr("paused")) + "</button>"
+      : '<p class="stamp-live"><span class="stamp-live__dot" aria-hidden="true"></span>' + esc(tr("live")) + "</p>";
+    if (!STAMP_API) {
+      h += '<div class="stamp-actions">' +
+        (c.stamps < SIZE ? '<button class="ba-btn ba-btn--outline" type="button" data-act="sim-stamp">' + esc(tr("simStamp")) + "</button>"
+          : '<button class="ba-btn ba-btn--outline" type="button" data-act="sim-free">' + esc(tr("simFree")) + "</button>") + "</div>";
+    }
+    if (c.freeDrinks > 0) h += '<p class="stamp-muted stamp-note">' + esc(tr("earned", { n: c.freeDrinks })) + "</p>";
+    h += '<p class="stamp-muted stamp-small">' + esc(tr("backup")) + "</p>" +
+      '<p class="stamp-muted stamp-small">' + esc(tr("home")) + "</p>" +
+      '<p class="stamp-muted stamp-small">' + esc(tr("privacy")) + "</p>";
     body.innerHTML = h;
-    body.classList.toggle("stamp-busy", state.busy);
     state.fresh = -1;   // the stamp animation plays once
   }
 
-  // ---- Actions ----
-  function setCard(card) { state.card = card; state.view = "card"; state.error = ""; }
-
-  function signedOut() {
-    store(TOKEN_KEY, null);
-    state.card = null; state.view = "auth"; state.mode = "signin";
+  // ---- Live updates while the card is open ----
+  var poll = { timer: 0, until: 0, busy: false };
+  function startLive() {
+    poll.until = Date.now() + POLL_FOR_MS;
+    if (state.paused) { state.paused = false; render(); }
+    clearTimeout(poll.timer);
+    check();
   }
-
-  function busy(p) {
-    state.busy = true; render();
-    return p.then(function (r) { state.busy = false; return r; });
-  }
-
-  function refresh() {
-    var token = load(TOKEN_KEY);
-    if (!token) { state.view = "auth"; render(); return Promise.resolve(); }
-    return api("card", { token: token }).then(function (r) {
-      if (r.ok) setCard(r.card);
-      else if (r.error === "signed_out") signedOut();
-      else { state.view = state.card ? "card" : "auth"; state.error = errText(r.error); }
-      render();
+  function check() {
+    if (poll.busy) return;
+    poll.busy = true;
+    fetchCard().then(function (card) {
+      poll.busy = false;
+      if (apply(card)) render();
+      clearTimeout(poll.timer);
+      if (!isOpen || document.hidden) return;
+      if (Date.now() > poll.until) { state.paused = true; render(); return; }
+      poll.timer = setTimeout(check, POLL_MS);
     });
   }
-
-  // Apply a stamp waiting from a QR scan, once the customer is signed in
-  function applyPending() {
-    var code = sload(PENDING_KEY), token = load(TOKEN_KEY);
-    if (!code || !token) return Promise.resolve();
-    sstore(PENDING_KEY, null);
-    return busy(api("stamp", { token: token, code: code })).then(function (r) {
-      if (r.card) setCard(r.card);
-      if (r.ok) { state.fresh = r.card.stamps - 1; state.msg = { text: tr("stamped", { n: r.card.stamps }), ok: true }; }
-      else if (r.error === "signed_out") { signedOut(); sstore(PENDING_KEY, code); }
-      else state.msg = { text: errText(r.error), ok: false };
-      render();
-    });
-  }
+  document.addEventListener("visibilitychange", function () { if (!document.hidden && isOpen) startLive(); });
 
   body.addEventListener("click", function (e) {
     var b = e.target.closest("button");
-    if (!b || state.busy) return;
-    if (b.dataset.mode) { state.mode = b.dataset.mode; state.error = ""; render(); return; }
-    var act = b.dataset.act, token = load(TOKEN_KEY);
-    if (act === "claim") { state.view = "staff"; state.error = ""; state.msg = null; render(); focusFirst(); }
-    else if (act === "cancel") { state.view = "card"; state.error = ""; render(); }
-    else if (act === "simulate") { sstore(PENDING_KEY, "demo"); state.msg = null; applyPending(); }
-    else if (act === "signout") {
-      api("logout", { token: token });
-      store(TOKEN_KEY, null); state.card = null; state.msg = null; state.view = "auth"; state.mode = "signin"; render();
-    }
+    if (!b) return;
+    var act = b.dataset.act;
+    if (act === "check") { state.msg = null; startLive(); }
+    else if (act === "sim-stamp") { demoStamp(); check(); }
+    else if (act === "sim-free") { demoFree(); check(); }
   });
-
-  body.addEventListener("submit", function (e) {
-    e.preventDefault();
-    if (state.busy) return;
-    var f = e.target, v = function (n) { return f.elements[n] ? f.elements[n].value.trim() : ""; };
-    if (f.id === "stamp-form") {
-      var up = state.mode === "signup";
-      var err = "";
-      if (up && !v("name")) err = "name";
-      else if (!normPhone(v("phone"))) err = "phone";
-      else if (!/^\d{4,6}$/.test(v("pin"))) err = "pin";
-      else if (up && v("pin") !== v("pin2")) err = "pin2";
-      if (err) { state.error = errText(err); render(); restore(f); return; }
-      var saved = { name: v("name"), phone: v("phone") };
-      busy(api(up ? "register" : "login", { name: v("name"), phone: v("phone"), pin: v("pin") })).then(function (r) {
-        if (r.ok) {
-          store(TOKEN_KEY, r.token); setCard(r.card); state.msg = null; render();
-          applyPending();
-        } else {
-          state.error = errText(r.error);
-          if (r.error === "exists") state.mode = "signin";
-          if (r.error === "no_account") state.mode = "signup";
-          render(); restore(body.querySelector("#stamp-form"), saved);
-        }
-      });
-    } else if (f.id === "staff-form") {
-      busy(api("redeem", { token: load(TOKEN_KEY), staffPin: v("staffPin") })).then(function (r) {
-        if (r.ok) { setCard(r.card); state.msg = { text: tr("redeemed"), ok: true }; }
-        else if (r.error === "signed_out") signedOut();
-        else state.error = errText(r.error);
-        render();
-      });
-    }
-  });
-
-  // Keep what the customer typed when the form re-renders with an error
-  function restore(f, vals) {
-    if (!f) return;
-    vals = vals || {};
-    ["name", "phone"].forEach(function (n) { if (f.elements[n] && vals[n] != null) f.elements[n].value = vals[n]; });
-  }
 
   // ---- Opening and closing ----
   var isOpen = false;
-  function focusFirst() {
-    var el = panel.querySelector("input, .stamp-panel__body button, .stamp-panel__close");
-    if (el) el.focus({ preventScroll: true });
-  }
   function open() {
     if (isOpen) return;
     isOpen = true;
+    ensureCode();
     panel.hidden = false; scrim.hidden = false;
     panel.inert = false;
     requestAnimationFrame(function () { panel.classList.add("is-open"); scrim.classList.add("is-open"); });
     tab.setAttribute("aria-expanded", "true");
     tab.classList.add("is-hidden");
-    setTimeout(focusFirst, 50);
-    if (state.view === "card" || state.view === "auth") refresh();
+    setTimeout(function () { closeBtn.focus({ preventScroll: true }); }, 50);
+    render();
+    startLive();
   }
   function close() {
     if (!isOpen) return;
     isOpen = false;
+    clearTimeout(poll.timer);
     panel.classList.remove("is-open"); scrim.classList.remove("is-open");
     panel.inert = true;
     tab.setAttribute("aria-expanded", "false");
     tab.classList.remove("is-hidden");
     setTimeout(function () { if (!isOpen) scrim.hidden = true; }, 300);
     state.msg = null;
-    if (state.view === "staff") state.view = "card";
     tab.focus({ preventScroll: true });
   }
   tab.addEventListener("click", open);
   closeBtn.addEventListener("click", close);
   scrim.addEventListener("click", close);
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && isOpen) close(); });
-  document.addEventListener("ba:lang", render);
+  document.addEventListener("ba:lang", function () { qrCache.code = null; render(); });
 
   // ---- Start ----
   panel.inert = true;
   tab.hidden = false;
-  // Arriving from the counter QR code: remember the code, tidy the address bar and open the card
-  var params = new URLSearchParams(location.search);
-  var code = params.get("stamp");
-  if (code) {
-    sstore(PENDING_KEY, code);
-    params.delete("stamp");
-    var qs = params.toString();
-    history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "") + location.hash);
+  if (scanned || staffSetting) history.replaceState(null, "", location.pathname + location.search);
+
+  if (staffSetting === "on" || staffSetting === "off") {
+    store(STAFF_KEY, staffSetting === "on" ? "1" : null);
+    state.msg = { text: tr(staffSetting === "on" ? "staffOn" : "staffOff"), ok: true };
+    open();
+  } else if (validCode(scanned) && scanned !== state.code) {
+    // A customer scanned their own card (for example a screenshot): bring it back to this phone
+    fetchCard().then(function (current) {
+      if (current && current.stamps > 0 && !window.confirm(tr("replace", { n: current.stamps }))) { apply(current); open(); return; }
+      state.code = scanned; store(CARD_KEY, scanned);
+      state.card = null;
+      state.msg = { text: tr("restored"), ok: true };
+      open();
+    });
+  } else if (state.code) {
+    fetchCard().then(function (card) { if (card) { apply(card); render(); } });
+    if (scanned) open();
   }
-  refresh().then(function () {
-    if (sload(PENDING_KEY)) { open(); applyPending(); }
-  });
 })();
