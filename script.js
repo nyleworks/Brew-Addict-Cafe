@@ -411,55 +411,100 @@
     }
   }
 
-  function paintMark(t) {
-    var m = geo && geo.mark;
-    if (!m) return;
-    var docked = t >= 1;
-    root.classList.toggle("mark-docked", docked);
-    if (docked) { heroMark.style.visibility = "hidden"; return; }
-    var e = easeInOut(t);
-    heroMark.style.transform = "translate3d(" + (m.x0 + (m.x1 - m.x0) * e).toFixed(1) + "px," + (m.y0 + (m.y1 - m.y0) * e).toFixed(1) + "px,0) scale(" + (1 + (m.s1 - 1) * e).toFixed(4) + ")";
-    var col = isNight ? "var(--ink-on-night)" : "";
-    if (heroMark.style.color !== col) heroMark.style.color = col;
-    if (heroMark.style.visibility !== "visible") heroMark.style.visibility = "visible";
-  }
-
-  function paintHero() {
-    if (!geo) return;
-    var raw = reduceMotion ? 1 : clamp01((window.scrollY - geo.start) / geo.travel);
-    paintMark(seg(raw, 0, MARK_END));
+  // Every moving part of the hero for one point of its scroll (raw: 0 at the top of the hero, 1 at its end),
+  // as [element, styles] pairs. Used both to paint directly and to build the scroll-linked CSS animation.
+  function heroFrame(raw) {
+    var out = [];
+    var m = geo.mark;
+    if (m) {
+      var t = seg(raw, 0, MARK_END), e = easeInOut(t);
+      out.push([heroMark, t >= 1 ? { transform: "none", visibility: "hidden" } : {
+        transform: "translate3d(" + (m.x0 + (m.x1 - m.x0) * e).toFixed(1) + "px," + (m.y0 + (m.y1 - m.y0) * e).toFixed(1) + "px,0) scale(" + (1 + (m.s1 - 1) * e).toFixed(4) + ")",
+        visibility: "visible" }]);
+      out.push([headerMark, { opacity: t >= 1 ? "1" : "0" }]);
+    }
     // The sign waits until the big wordmark has mostly flown up into the header
     var p = seg(raw, SIGN_START, 1);
-
     var fall = seg(p, 0, 0.32);               // drop: speeds up like gravity
     var squash = seg(p, 0.32, 0.40);          // landing thud
     var wobble = seg(p, 0.37, 0.62);          // teeters on one leg, then the other, then balances
 
     // As the text arrives, pan the scene up just enough for the text to fit under the big sign
     var pan = geo.overflow * easeOut(seg(p, 0.56, 0.86));
-    scene.style.transform = pan ? "translate3d(0," + (-pan).toFixed(1) + "px,0)" : "";
+    out.push([scene, { transform: pan ? "translate3d(0," + (-pan).toFixed(1) + "px,0)" : "none" }]);
 
     // Start with the whole sign above the top of the screen
     var start = -(geo.signTop - pan + geo.signH + 24);
     var dy = start * (1 - fall * fall);
     var sq = squash > 0 && squash < 1 ? Math.sin(squash * Math.PI) : 0;
-    signDrop.style.transform = "translate3d(0," + dy.toFixed(1) + "px,0) scale(" + (1 + sq * 0.035).toFixed(4) + "," + (1 - sq * 0.05).toFixed(4) + ")";
+    out.push([signDrop, { transform: "translate3d(0," + dy.toFixed(1) + "px,0) scale(" + (1 + sq * 0.035).toFixed(4) + "," + (1 - sq * 0.05).toFixed(4) + ")" }]);
 
     var angle = 0;
     if (wobble > 0 && wobble < 1) angle = 12 * Math.exp(-3.2 * wobble) * Math.sin(wobble * Math.PI * 3.5);
-    signImg.style.transformOrigin = angle >= 0 ? FOOT_R : FOOT_L;
-    signImg.style.transform = angle ? "rotate(" + angle.toFixed(2) + "deg)" : "";
+    out.push([signImg, { transformOrigin: angle >= 0 ? FOOT_R : FOOT_L, transform: angle ? "rotate(" + angle.toFixed(2) + "deg)" : "none" }]);
 
     // The shadow gathers as the sign nears the ground and slides with the tip
     var near = fall * fall;
-    signShadow.style.opacity = (near * 0.95).toFixed(3);
-    signShadow.style.transform = "translateX(" + (angle * 2).toFixed(1) + "px) scale(" + (0.35 + 0.65 * near).toFixed(3) + "," + (0.5 + 0.5 * near).toFixed(3) + ")";
+    out.push([signShadow, { opacity: (near * 0.95).toFixed(3),
+      transform: "translateX(" + (angle * 2).toFixed(1) + "px) scale(" + (0.35 + 0.65 * near).toFixed(3) + "," + (0.5 + 0.5 * near).toFixed(3) + ")" }]);
 
     // Text and buttons: each starts just below the bottom of the screen and glides up into place, one after another
     risers.forEach(function (el, i) {
       var r = easeOut(seg(p, 0.58 + i * 0.05, 0.80 + i * 0.05));
       var below = Math.max(0, geo.stageH - (geo.risers[i] - pan)) + 24;
-      el.style.transform = r >= 1 ? "" : "translate3d(0," + ((1 - r) * below).toFixed(1) + "px,0)";
+      out.push([el, { transform: r >= 1 ? "none" : "translate3d(0," + ((1 - r) * below).toFixed(1) + "px,0)" }]);
+    });
+    return out;
+  }
+
+  // Where the browser can tie animations to the scroll position itself (Safari 26, recent Chrome), the hero runs
+  // as CSS scroll-driven animations: they move in step with the scroll instead of a frame behind it, which is
+  // what made the wordmark and the sign look choppy on iPhones. Elsewhere, scrolling paints each frame.
+  var cssScroll = !reduceMotion && window.CSS && CSS.supports && CSS.supports("animation-timeline: scroll()");
+  var heroStyle = null;
+  var HERO_STEPS = 200;
+  function buildHeroAnimation() {
+    if (!cssScroll || !geo) return;
+    var frames = [];
+    for (var i = 0; i <= HERO_STEPS; i++) frames.push(heroFrame(i / HERO_STEPS));
+    var css = "";
+    frames[0].forEach(function (pair, k) {
+      var name = "ba-hero-" + k;
+      css += "@keyframes " + name + "{";
+      frames.forEach(function (f, i) {
+        var st = f[k][1], decl = "";
+        Object.keys(st).forEach(function (prop) {
+          decl += prop.replace(/[A-Z]/g, function (c) { return "-" + c.toLowerCase(); }) + ":" + st[prop] + ";";
+        });
+        css += (i * 100 / HERO_STEPS).toFixed(3) + "%{" + decl + "}";
+      });
+      css += "}";
+      var el = pair[0];
+      el.style.animation = name + " 1s linear both";
+      el.style.animationTimeline = "scroll(root)";
+      el.style.animationRange = Math.round(geo.start) + "px " + Math.round(geo.start + geo.travel) + "px";
+    });
+    if (!heroStyle) { heroStyle = document.createElement("style"); document.head.appendChild(heroStyle); }
+    heroStyle.textContent = css;
+    // Clear what direct painting left behind, so the animation is in charge
+    frames[0].forEach(function (pair) { Object.keys(pair[1]).forEach(function (prop) { pair[0].style[prop] = ""; }); });
+  }
+
+  function paintHero() {
+    if (!geo) return;
+    var raw = reduceMotion ? 1 : clamp01((window.scrollY - geo.start) / geo.travel);
+    if (geo.mark) {
+      root.classList.toggle("mark-docked", seg(raw, 0, MARK_END) >= 1);
+      var col = isNight ? "var(--ink-on-night)" : "";
+      if (heroMark.style.color !== col) heroMark.style.color = col;
+    }
+    if (cssScroll) return;
+    heroFrame(raw).forEach(function (pair) {
+      var el = pair[0], st = pair[1];
+      Object.keys(st).forEach(function (prop) {
+        var v = st[prop] === "none" && prop === "transform" ? "" : st[prop];
+        if (el.style[prop] !== v) el.style[prop] = v;
+      });
     });
   }
 
@@ -633,6 +678,7 @@
     measureLayout();
     measure();
     measureHero();
+    buildHeroAnimation();
     paintSky();
   }
 
