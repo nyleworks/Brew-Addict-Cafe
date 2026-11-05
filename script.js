@@ -418,9 +418,10 @@
     var m = geo.mark;
     if (m) {
       var t = seg(raw, 0, MARK_END), e = easeInOut(t);
-      out.push([heroMark, t >= 1 ? { transform: "none", visibility: "hidden" } : {
+      // Once docked it stays at the header position (hidden), so the animation never slides it anywhere else
+      out.push([heroMark, {
         transform: "translate3d(" + (m.x0 + (m.x1 - m.x0) * e).toFixed(1) + "px," + (m.y0 + (m.y1 - m.y0) * e).toFixed(1) + "px,0) scale(" + (1 + (m.s1 - 1) * e).toFixed(4) + ")",
-        visibility: "visible" }]);
+        visibility: t >= 1 ? "hidden" : "visible" }]);
       out.push([headerMark, { opacity: t >= 1 ? "1" : "0" }]);
     }
     // The sign waits until the big wordmark has mostly flown up into the header
