@@ -327,27 +327,29 @@ a { color: inherit; }
 }
 .stamp-tab, .stamp-panel { --paper: var(--surface-100); color: var(--ink); }
 
-/* The tab: a raised cartoon tab hugging the left edge, label reading bottom to top */
-.stamp-tab { position: fixed; left: 0; top: 50%; z-index: 9; display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
-  padding: 14px 9px 16px 7px; margin: 0; transform: translateY(-50%); cursor: pointer;
-  background: var(--sky, var(--paper)); border: 2.5px solid var(--ink); border-left: 0; border-radius: 0 16px 16px 0;
+/* The tab: a small raised cartoon tab hugging the bottom-left corner, out of the way of the page text */
+.stamp-tab { position: fixed; left: 0; bottom: max(16px, env(safe-area-inset-bottom, 0px)); z-index: 9; display: flex; align-items: center; gap: var(--space-2);
+  padding: 8px 14px 8px 10px; margin: 0; cursor: pointer;
+  background: var(--sky, var(--paper)); border: 2.5px solid var(--ink); border-left: 0; border-radius: 0 999px 999px 0;
   box-shadow: 4px 4px 0 0 var(--ink); font: 700 12px/1 var(--font-poster); letter-spacing: .14em; text-transform: uppercase;
   transition: transform .15s cubic-bezier(.3, 1.6, .5, 1), box-shadow .15s cubic-bezier(.3, 1.6, .5, 1); }
 .stamp-tab[hidden] { display: none; }
-.stamp-tab__label { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+.stamp-tab__label { white-space: nowrap; }
 .stamp-tab__icon { width: 26px; height: 26px; border-radius: 50%; border: 2px solid currentColor; position: relative; flex: none; }
 .stamp-tab__icon::before, .stamp-dot__mascot { content: ""; position: absolute; inset: 12%; background: currentColor;
   -webkit-mask: url(images/mascot.png) center / contain no-repeat; mask: url(images/mascot.png) center / contain no-repeat; }
-.stamp-tab__badge { position: absolute; top: -8px; right: -10px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 11px;
+.stamp-tab__badge { position: absolute; top: -9px; right: -9px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 11px;
   background: var(--ink); color: var(--paper); font: 800 11px/22px var(--font-poster); letter-spacing: 0; text-align: center; }
 .stamp-tab { overflow: visible; }
-@media (hover: hover) { .stamp-tab:hover { transform: translate(3px, -50%); box-shadow: 6px 4px 0 0 var(--ink); } }
-.stamp-tab:active { transform: translate(4px, calc(-50% + 4px)); box-shadow: 0 0 0 0 var(--ink); transition-duration: .05s; }
+@media (hover: hover) { .stamp-tab:hover { transform: translate(3px, -2px); box-shadow: 6px 6px 0 0 var(--ink); } }
+.stamp-tab:active { transform: translate(4px, 4px); box-shadow: 0 0 0 0 var(--ink); transition-duration: .05s; }
 .stamp-tab:focus-visible { outline: 2.5px solid var(--focus); outline-offset: 3px; }
-.stamp-tab.is-hidden { transform: translate(-110%, -50%); }
+.stamp-tab.is-hidden { transform: translateX(-120%); }
+/* On phones only the mascot shows, so the tab covers as little as possible; its name stays for screen readers */
 @media (max-width: 719px) {
-  .stamp-tab { padding: 10px 7px 12px 5px; font-size: 11px; }
-  .stamp-tab__icon { width: 22px; height: 22px; }
+  .stamp-tab { padding: 7px 10px 7px 8px; }
+  .stamp-tab__icon { width: 28px; height: 28px; }
+  .stamp-tab__label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
 
 /* The card panel slides in from the left */
