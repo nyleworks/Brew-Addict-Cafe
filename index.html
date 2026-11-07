@@ -7,14 +7,15 @@
   <meta name="description" content="Brew Addict Café, the night-coffee hideout on Jalan Sinisian, Kundasang. Lattes, matcha and Spanish latte, open daily 10:00 AM – 11:30 PM. Order on foodpanda or drop by.">
   <meta name="theme-color" content="#f5f2ec">
   <meta name="format-detection" content="telephone=no">
-  <!-- Once the site has its web address, add <link rel="canonical"> and og:url, and make og:image and twitter:image full https:// links -->
+  <link rel="canonical" href="https://nyleworks.github.io/Brew-Addict-Cafe/">
 
   <!-- Link previews (WhatsApp, Facebook, Instagram, X) -->
   <meta property="og:type" content="website">
+  <meta property="og:url" content="https://nyleworks.github.io/Brew-Addict-Cafe/">
   <meta property="og:site_name" content="Brew Addict Café">
   <meta property="og:title" content="Brew Addict Café · Open late in Kundasang">
   <meta property="og:description" content="The night-coffee hideout off the Sinisian road. Open daily 10:00 AM – 11:30 PM.">
-  <meta property="og:image" content="og-image.png">
+  <meta property="og:image" content="https://nyleworks.github.io/Brew-Addict-Cafe/og-image.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="brew addict wordmark beside bands fading from day to night, with the café's hours">
@@ -23,7 +24,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Brew Addict Café · Open late in Kundasang">
   <meta name="twitter:description" content="The night-coffee hideout off the Sinisian road. Open daily 10:00 AM – 11:30 PM.">
-  <meta name="twitter:image" content="og-image.png">
+  <meta name="twitter:image" content="https://nyleworks.github.io/Brew-Addict-Cafe/og-image.png">
 
   <!-- Café details for Google Search and Maps -->
   <script type="application/ld+json">
@@ -32,7 +33,9 @@
     "@type": "CafeOrCoffeeShop",
     "name": "Brew Addict Café",
     "description": "The night-coffee hideout off the Sinisian road in Kundasang.",
-    "image": "og-image.png",
+    "url": "https://nyleworks.github.io/Brew-Addict-Cafe/",
+    "image": "https://nyleworks.github.io/Brew-Addict-Cafe/og-image.png",
+    "hasMenu": "https://nyleworks.github.io/Brew-Addict-Cafe/#menu",
     "telephone": "+60 11-6412 2877",
     "priceRange": "RM 8 – RM 15",
     "servesCuisine": ["Coffee", "Matcha", "Non-coffee drinks"],
@@ -204,7 +207,38 @@
         <div class="actions actions--menu">
           <a class="ba-btn ba-btn--primary" href="https://www.foodpanda.my/restaurant/hcd2/brew-addict-kundasang-hcd2" target="_blank" rel="noopener" data-link="foodpanda" data-i18n="cta.foodpanda">Order on foodpanda</a>
         </div>
-        <div class="menu-grid" id="menu-grid"></div>
+        <!-- English menu written here so search engines can read it without JavaScript.
+             script.js (MENU) redraws it on load and on language switch: change prices in BOTH places. -->
+        <div class="menu-grid" id="menu-grid">
+          <div class="menu-cat menu-cat--cols-2">
+            <div class="menu-cat__head"><h3 class="h3">Coffee</h3><span class="menu-cat__col">Hot</span><span class="menu-cat__col">Iced</span></div>
+            <div class="ba-menu-item"><span class="ba-menu-item__name">Brew Addict Signature</span><span class="ba-menu-item__price is-none" aria-label="Hot: not served">—</span><span class="ba-menu-item__price" aria-label="Iced: RM 15">15</span></div>
+            <div class="ba-menu-item"><span class="ba-menu-item__name">Americano</span><span class="ba-menu-item__price" aria-label="Hot: RM 8">8</span><span class="ba-menu-item__price" aria-label="Iced: RM 9">9</span></div>
+            <div class="ba-menu-item"><span class="ba-menu-item__name">Caffe Latte</span><span class="ba-menu-item__price" aria-label="Hot: RM 10">10</span><span class="ba-menu-item__price" aria-label="Iced: RM 13">13</span></div>
+            <div class="ba-menu-item"><span class="ba-menu-item__name">Spanish Latte</span><span class="ba-menu-item__price" aria-label="Hot: RM 10">10</span><span class="ba-menu-item__price" aria-label="Iced: RM 13">13</span></div>
+            <div class="ba-menu-item"><span class="ba-menu-item__name">Vanilla Latte</span><span class="ba-menu-item__price" aria-label="Hot: RM 10">10</span><span class="ba-menu-item__price" aria-label="Iced: RM 13">13</span></div>
+            <div class="ba-menu-item"><span class="ba-menu-item__name">Hazelnut Latte</span><span class="ba-menu-item__price" aria-label="Hot: RM 10">10</span><span class="ba-menu-item__price" aria-label="Iced: RM 13">13</span></div>
+            <div class="ba-menu-item"><span class="ba-menu-item__name">Caramel Macchiato</span><span class="ba-menu-item__price" aria-label="Hot: RM 10">10</span><span class="ba-menu-item__price" aria-label="Iced: RM 15">15</span></div>
+          </div>
+          <div class="menu-cat menu-cat--cols-2">
+            <div class="menu-cat__head"><h3 class="h3">Non-coffee</h3><span class="menu-cat__col">Hot</span><span class="menu-cat__col">Iced</span></div>
+            <div class="ba-menu-item"><span class="ba-menu-item__name">Cocoa Royale</span><span class="ba-menu-item__price" aria-label="Hot: RM 10">10</span><span class="ba-menu-item__price" aria-label="Iced: RM 15">15</span></div>
+            <div class="ba-menu-item"><span class="ba-menu-item__name">Matcha Strawberry</span><span class="ba-menu-item__price is-none" aria-label="Hot: not served">—</span><span class="ba-menu-item__price" aria-label="Iced: RM 15">15</span></div>
+            <div class="ba-menu-item"><span class="ba-menu-item__name">Matcha Blossom</span><span class="ba-menu-item__price is-none" aria-label="Hot: not served">—</span><span class="ba-menu-item__price" aria-label="Iced: RM 15">15</span></div>
+            <div class="ba-menu-item"><span class="ba-menu-item__name">Matcha Mango</span><span class="ba-menu-item__price is-none" aria-label="Hot: not served">—</span><span class="ba-menu-item__price" aria-label="Iced: RM 15">15</span></div>
+            <div class="ba-menu-item"><span class="ba-menu-item__name">Matcha Latte</span><span class="ba-menu-item__price is-none" aria-label="Hot: not served">—</span><span class="ba-menu-item__price" aria-label="Iced: RM 11">11</span></div>
+            <div class="ba-menu-item"><span class="ba-menu-item__name">Matcha Cloud</span><span class="ba-menu-item__price is-none" aria-label="Hot: not served">—</span><span class="ba-menu-item__price" aria-label="Iced: RM 15">15</span></div>
+            <div class="ba-menu-item"><span class="ba-menu-item__name">Jasmine Tea</span><span class="ba-menu-item__price is-none" aria-label="Hot: not served">—</span><span class="ba-menu-item__price" aria-label="Iced: RM 10">10</span></div>
+            <div class="ba-menu-item"><span class="ba-menu-item__name">Pink Soda</span><span class="ba-menu-item__price is-none" aria-label="Hot: not served">—</span><span class="ba-menu-item__price" aria-label="Iced: RM 10">10</span></div>
+          </div>
+          <div class="menu-cat menu-cat--cols-1">
+            <div class="menu-cat__head"><h3 class="h3">Add-ons</h3><span class="menu-cat__col">RM</span></div>
+            <div class="ba-menu-item"><span class="ba-menu-item__name">Extra Shot</span><span class="ba-menu-item__price" aria-label="RM: RM 2">2</span></div>
+            <div class="ba-menu-item"><span class="ba-menu-item__name">Whip Cream</span><span class="ba-menu-item__price" aria-label="RM: RM 2">2</span></div>
+            <div class="ba-menu-item"><span class="ba-menu-item__name">Cold Foam</span><span class="ba-menu-item__price" aria-label="RM: RM 2">2</span></div>
+            <div class="ba-menu-item"><span class="ba-menu-item__name">Syrup</span><span class="ba-menu-item__price" aria-label="RM: RM 2">2</span></div>
+          </div>
+        </div>
       </div>
     </section>
 
