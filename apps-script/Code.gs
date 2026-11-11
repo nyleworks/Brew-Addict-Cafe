@@ -14,6 +14,9 @@
  *   the staff page asks staff to confirm before stamping, and the move is logged.
  * - setup(), styleSheets() and housekeeping() refuse to run for anyone but the owner (or the nightly trigger).
  *
+ * The sheet gets a "Stamp card" menu: "Monthly report…" makes a report tab for one month, and "Save report as
+ * PDF" saves the open report tab to Google Drive (folder "Brew Addict stamp reports").
+ *
  * Rules: 10 stamps = one free drink. One stamp per card per day (Kundasang time). A card lasts one month from
  * its first stamp; an unfinished card then clears. Cards with no activity for 6 months are deleted.
  *
@@ -543,6 +546,203 @@ function log_(now, id, event, stampNumber, drink, days, note) {
 }
 
 function todayStr_() { return Utilities.formatDate(new Date(), TZ, "yyyy-MM-dd"); }
+
+// ---------------------------------------------------------------------------------------------------------
+// Monthly report: the "Stamp card" menu in the sheet. "Monthly report…" builds a tab for one month from the
+// Log tab, and "Save report as PDF" puts the open report tab in Google Drive as a PDF. The numbers are written as
+// plain values, so a report never changes after it is made (make it again to refresh it). Owner only.
+// ---------------------------------------------------------------------------------------------------------
+var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
+  "November", "December"];
+var REPORT_FOLDER = "Brew Addict stamp reports";
+
+function onOpen() {
+  SpreadsheetApp.getUi().createMenu("Stamp card")
+    .addItem("Monthly report…", "monthlyReport")
+    .addItem("Save report as PDF", "saveReportPdf")
+    .addToUi();
+}
+
+function monthlyReport() {
+  requireStaff_();
+  var ui = SpreadsheetApp.getUi();
+  var last = new Date();
+  last.setDate(1); last.setMonth(last.getMonth() - 1);
+  var suggest = Utilities.formatDate(last, TZ, "yyyy-MM");
+  var res = ui.prompt("Monthly report", "Which month? Type it like " + suggest + ". Leave empty for " +
+    MONTHS[Number(suggest.slice(5)) - 1] + " " + suggest.slice(0, 4) + ".", ui.ButtonSet.OK_CANCEL);
+  if (res.getSelectedButton() !== ui.Button.OK) return;
+  var ym = res.getResponseText().trim() || suggest;
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(ym)) { ui.alert("Please type the month like " + suggest + "."); return; }
+  var sh = buildReport_(ym);
+  sh.activate();
+  ui.alert("Report ready", "To get a PDF: Stamp card menu → Save report as PDF.", ui.ButtonSet.OK);
+}
+
+function saveReportPdf() {
+  requireStaff_();
+  var ui = SpreadsheetApp.getUi(), ss = SpreadsheetApp.getActiveSpreadsheet(), sh = ss.getActiveSheet();
+  if (sh.getName().indexOf("Report ") !== 0) {
+    ui.alert("Open a report tab first (make one with Stamp card → Monthly report…).");
+    return;
+  }
+  SpreadsheetApp.flush();
+  var url = "https://docs.google.com/spreadsheets/d/" + ss.getId() + "/export?format=pdf&gid=" + sh.getSheetId() +
+    "&size=A4&portrait=true&fitw=true&gridlines=false&printtitle=false&sheetnames=false&pagenum=CENTER" +
+    "&top_margin=0.5&bottom_margin=0.5&left_margin=0.5&right_margin=0.5";
+  var resp = UrlFetchApp.fetch(url, { headers: { Authorization: "Bearer " + ScriptApp.getOAuthToken() }, muteHttpExceptions: true });
+  if (resp.getResponseCode() !== 200) { ui.alert("Couldn't make the PDF (error " + resp.getResponseCode() + "). Try again in a minute."); return; }
+  var folders = DriveApp.getFoldersByName(REPORT_FOLDER);
+  var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(REPORT_FOLDER);
+  var name = "Brew Addict stamp " + sh.getName().toLowerCase() + ".pdf";
+  var old = folder.getFilesByName(name);
+  while (old.hasNext()) old.next().setTrashed(true);   // one PDF per month: a new one replaces the old
+  var file = folder.createFile(resp.getBlob().setName(name));
+  var link = HtmlService.createHtmlOutput('<p style="font:15px/1.5 sans-serif">Saved in Google Drive, folder "' +
+    REPORT_FOLDER + '".</p><p style="font:15px/1.5 sans-serif"><a href="' + file.getUrl() + '" target="_blank">Open the PDF</a></p>')
+    .setWidth(360).setHeight(140);
+  ui.showModalDialog(link, "PDF saved");
+}
+
+// Everything the report shows for one month ("yyyy-MM"), worked out from the rows of the Log tab
+function reportData_(rows, ym) {
+  var y = Number(ym.slice(0, 4)), m = Number(ym.slice(5, 7));
+  var daysIn = new Date(y, m, 0).getDate();
+  var d = {
+    stamps: 0, free: 0, full: 0, expired: 0, lostToExpiry: 0, rescues: 0, rescuedStamps: 0, moves: 0,
+    newMembers: 0, active: 0, avgFill: "-", days: [], drinks: [], weekdays: [], hours: [], rescueList: [], moveList: []
+  };
+  var firstStamp = {}, activeSet = {}, fill = [], byDay = {}, byDrink = {}, byWeekday = {}, byHour = {};
+  rows.forEach(function (r) {
+    var date = dateKey_(r[1]), card = String(r[2]), ev = String(r[3]);
+    if (ev === "stamp" && (!firstStamp[card] || date < firstStamp[card])) firstStamp[card] = date;
+    if (date.slice(0, 7) !== ym) return;
+    var day = byDay[date] || (byDay[date] = { stamps: 0, free: 0 });
+    if (ev === "stamp") {
+      d.stamps++; day.stamps++; activeSet[card] = 1;
+      if (Number(r[4]) === CARD_SIZE) d.full++;
+      byWeekday[r[5]] = (byWeekday[r[5]] || 0) + 1;
+      byHour[Number(r[6])] = (byHour[Number(r[6])] || 0) + 1;
+    } else if (ev === "free_drink") {
+      d.free++; day.free++;
+      var drink = String(r[7] || "") || "Not picked";
+      byDrink[drink] = (byDrink[drink] || 0) + 1;
+      if (r[8] !== "" && r[8] != null && !isNaN(Number(r[8]))) fill.push(Number(r[8]));
+    } else if (ev === "expired") {
+      d.expired++; d.lostToExpiry += Number(r[4]) || 0;
+    } else if (ev === "rescue") {
+      d.rescues++; d.rescuedStamps += Number(r[4]) || 0;
+      d.rescueList.push([timeText_(r[0]), card, Number(r[4]) || 0, String(r[9] || "")]);
+    } else if (ev === "moved") {
+      d.moves++;
+      d.moveList.push([timeText_(r[0]), card, Number(r[4]) || 0, String(r[9] || "")]);
+    }
+  });
+  Object.keys(firstStamp).forEach(function (c) { if (firstStamp[c].slice(0, 7) === ym) d.newMembers++; });
+  d.active = Object.keys(activeSet).length;
+  if (fill.length) d.avgFill = Math.round(fill.reduce(function (a, b) { return a + b; }, 0) / fill.length * 10) / 10;
+  var wd = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  for (var i = 1; i <= daysIn; i++) {
+    var key = ym + "-" + ("0" + i).slice(-2), v = byDay[key] || { stamps: 0, free: 0 };
+    d.days.push([key, wd[new Date(y, m - 1, i).getDay()], v.stamps, v.free]);
+  }
+  d.drinks = Object.keys(byDrink).map(function (k) { return [k, byDrink[k]]; })
+    .sort(function (a, b) { return b[1] - a[1] || (a[0] < b[0] ? -1 : 1); });
+  d.weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(function (k) { return [k, byWeekday[k] || 0]; });
+  d.hours = Object.keys(byHour).map(Number).sort(function (a, b) { return a - b; })
+    .map(function (h) { return [hourText_(h), byHour[h]]; });
+  return d;
+}
+
+function dateKey_(v) {
+  if (Object.prototype.toString.call(v) === "[object Date]") return Utilities.formatDate(v, TZ, "yyyy-MM-dd");
+  return String(v || "").slice(0, 10);
+}
+function timeText_(v) {
+  if (Object.prototype.toString.call(v) === "[object Date]") return Utilities.formatDate(v, TZ, "d MMM, h:mm a");
+  return String(v || "");
+}
+function hourText_(h) { return (h % 12 || 12) + (h < 12 ? " AM" : " PM"); }
+
+// Writes the report tab: four columns wide so it prints on one A4 page width
+function buildReport_(ym) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var log = ss.getSheetByName("Log");
+  var rows = log.getLastRow() > 1 ? log.getRange(2, 1, log.getLastRow() - 1, LOG_HEADERS.length).getValues() : [];
+  var d = reportData_(rows, ym);
+  var title = MONTHS[Number(ym.slice(5)) - 1] + " " + ym.slice(0, 4);
+  var name = "Report " + ym;
+  var sh = ss.getSheetByName(name);
+  if (sh) sh.clear(); else sh = ss.insertSheet(name, ss.getSheets().length);
+  sh.getBandings().forEach(function (b) { b.remove(); });
+  sh.setConditionalFormatRules([]);
+
+  var out = [], heads = [], subs = [];
+  function row(a, b, c, e) { out.push([a == null ? "" : a, b == null ? "" : b, c == null ? "" : c, e == null ? "" : e]); }
+  function head(t) { row(""); heads.push(out.length + 1); row(t); }
+  function sub(cols) { subs.push(out.length + 1); row(cols[0], cols[1], cols[2], cols[3]); }
+
+  row("BREW ADDICT · STAMP CARD REPORT");
+  row(title);
+  row("Made " + Utilities.formatDate(new Date(), TZ, "d MMMM yyyy, h:mm a") + ", from the Log tab.");
+  head("The month in numbers");
+  [["Stamps given", d.stamps], ["New members (first stamp this month)", d.newMembers],
+   ["Active members (at least 1 stamp)", d.active], ["Free drinks given", d.free],
+   ["Cards that reached 10 stamps", d.full], ["Average days to fill a card", d.avgFill],
+   ["Cards that expired unfinished", d.expired], ["Stamps lost to expiry", d.lostToExpiry],
+   ["Lost-card rescues by staff", d.rescues], ["Stamps given by rescues", d.rescuedStamps],
+   ["Cards moved to a new phone", d.moves]].forEach(function (x) { row(x[0], "", "", x[1]); });
+  var numbersEnd = out.length;
+
+  head("Day by day");
+  sub(["Date", "Day", "Stamps", "Free drinks"]);
+  var daysStart = out.length + 1;
+  d.days.forEach(function (x) { row(x[0], x[1], x[2], x[3]); });
+  row("Total", "", d.stamps, d.free);
+  var daysTotal = out.length;
+
+  head("Stamps by day of the week");
+  d.weekdays.forEach(function (x) { row(x[0], "", "", x[1]); });
+  head("Stamps by hour");
+  if (d.hours.length) d.hours.forEach(function (x) { row(x[0], "", "", x[1]); }); else row("No stamps this month");
+  head("Free drinks by drink");
+  if (d.drinks.length) d.drinks.forEach(function (x) { row(x[0], "", "", x[1]); }); else row("No free drinks this month");
+
+  head("Lost-card rescues (check these)");
+  if (d.rescueList.length) { sub(["When", "Card", "Stamps", "Reason"]); d.rescueList.forEach(function (x) { row(x[0], x[1], x[2], x[3]); }); }
+  else row("None this month");
+  head("Cards moved to a new phone");
+  if (d.moveList.length) { sub(["When", "Card", "Stamps", "Note"]); d.moveList.forEach(function (x) { row(x[0], x[1], x[2], x[3]); }); }
+  else row("None this month");
+
+  var range = sh.getRange(1, 1, out.length, 4);
+  // Numbers stay numbers (so the Excel download adds up). Text gets a leading ' so Sheets never turns it into a date
+  range.setValues(out.map(function (r) {
+    return r.map(function (v) { return typeof v === "number" || v === "" ? v : "'" + String(v).replace(/^'/, ""); });
+  }));
+
+  // Look: the website's black-and-white style
+  sh.setHiddenGridlines(true);
+  sh.setTabColor(STYLE.ink);
+  range.setFontFamily(STYLE.sans).setFontSize(10).setFontColor(STYLE.ink).setVerticalAlignment("middle").setWrap(true);
+  sh.getRange("A1").setFontFamily(STYLE.poster).setFontSize(16).setFontWeight("bold");
+  sh.getRange("A2").setFontFamily(STYLE.poster).setFontSize(22).setFontWeight("bold");
+  sh.getRange("A3").setFontColor(STYLE.muted).setFontStyle("italic");
+  heads.forEach(function (r) {
+    sh.getRange(r, 1, 1, 4).setFontFamily(STYLE.poster).setFontSize(12).setFontWeight("bold")
+      .setBorder(null, null, true, null, null, null, STYLE.ink, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  });
+  subs.forEach(function (r) { sh.getRange(r, 1, 1, 4).setBackground(STYLE.ink).setFontColor(STYLE.paper).setFontWeight("bold"); });
+  sh.getRange(heads[0] + 1, 4, numbersEnd - heads[0], 1).setFontFamily(STYLE.poster).setFontSize(13).setFontWeight("bold");
+  sh.getRange(daysStart, 1, daysTotal - daysStart + 1, 4)
+    .setBorder(null, null, null, null, null, true, STYLE.line, SpreadsheetApp.BorderStyle.SOLID);
+  sh.getRange(daysTotal, 1, 1, 4).setFontWeight("bold")
+    .setBorder(true, null, null, null, null, null, STYLE.ink, SpreadsheetApp.BorderStyle.SOLID);
+  sh.getRange(1, 2, out.length, 3).setHorizontalAlignment("right");
+  subs.forEach(function (r) { if (sh.getRange(r, 4).getValue() === "Reason" || sh.getRange(r, 4).getValue() === "Note") sh.getRange(r, 4).setHorizontalAlignment("left"); });
+  sh.setColumnWidth(1, 260); sh.setColumnWidth(2, 110); sh.setColumnWidth(3, 90); sh.setColumnWidth(4, 220);
+  return sh;
+}
 
 // ---------------------------------------------------------------------------------------------------------
 // The staff page
