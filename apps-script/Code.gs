@@ -48,6 +48,7 @@ function setup() {
     if (t.getHandlerFunction() === "housekeeping") ScriptApp.deleteTrigger(t);
   });
   ScriptApp.newTrigger("housekeeping").timeBased().everyDays(1).atHour(4).inTimezone(TZ).create();
+  styleSheets();
   Logger.log("Done. Staff actions will only work for " + Session.getEffectiveUser().getEmail() + ".");
 }
 
@@ -66,7 +67,7 @@ function buildSummary_(ss) {
   sh.clear();
   var since30 = 'Log!A2:A>=NOW()-30';
   var rows = [
-    ["Brew Addict stamp card", ""],
+    ["BREW ADDICT STAMP CARD", ""],
     ["Updates by itself from the Log tab. Please don't edit this tab.", ""],
     ["", ""],
     ["Members (cards with at least 1 stamp)", '=IFERROR(COUNTUNIQUE(FILTER(Log!C2:C, Log!D2:D="stamp")), 0)'],
@@ -95,6 +96,120 @@ function buildSummary_(ss) {
   sh.getRange("G5").setFormula("=IFERROR(QUERY(Log!D2:H, \"select H, count(D) where D = 'free_drink' and H <> '' group by H order by count(D) desc label H 'Drink', count(D) 'Free drinks'\", 0), \"None yet\")");
   sh.setColumnWidth(1, 300);
   sh.setColumnWidth(7, 200);
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// Look of the sheet: the website's black-and-white style. Run styleSheets() from the editor any time; it only
+// changes fonts, colours and sizes, never the data. setup() runs it too.
+// ---------------------------------------------------------------------------------------------------------
+var STYLE = {
+  ink: "#161412", muted: "#5c5750", paper: "#f5f2ec", paper2: "#ece7df", line: "#cfc8bc", white: "#ffffff",
+  sans: "Lexend", poster: "Archivo", mono: "Roboto Mono"
+};
+
+function styleSheets() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  styleSummary_(ss.getSheetByName("Summary"));
+  styleTable_(ss.getSheetByName("Cards"), CARD_HEADERS.length, [260, 80, 200, 120, 100, 200, 200], [1]);
+  styleTable_(ss.getSheetByName("Log"), LOG_HEADERS.length, [140, 100, 120, 100, 110, 90, 70, 190, 100], [3]);
+  styleCardsRules_(ss.getSheetByName("Cards"));
+  styleLogRules_(ss.getSheetByName("Log"));
+}
+
+// Cards and Log: black header bar, soft banded rows, code columns in a mono font, no gridlines.
+function styleTable_(sh, cols, widths, monoCols) {
+  if (!sh) return;
+  var rows = sh.getMaxRows();
+  sh.setTabColor(STYLE.ink);
+  sh.setHiddenGridlines(true);
+  sh.setFrozenRows(1);
+  sh.getBandings().forEach(function (b) { b.remove(); });
+
+  var all = sh.getRange(1, 1, rows, cols);
+  all.setFontFamily(STYLE.sans).setFontSize(10).setFontColor(STYLE.ink).setVerticalAlignment("middle");
+  monoCols.forEach(function (c) { sh.getRange(2, c, Math.max(rows - 1, 1), 1).setFontFamily(STYLE.mono); });
+
+  var band = all.applyRowBanding(SpreadsheetApp.BandingTheme.LIGHT_GREY, true, false);
+  band.setHeaderRowColor(STYLE.ink).setFirstRowColor(STYLE.white).setSecondRowColor(STYLE.paper);
+
+  var head = sh.getRange(1, 1, 1, cols);
+  head.setFontFamily(STYLE.poster).setFontWeight("bold").setFontColor(STYLE.paper).setFontSize(10)
+    .setHorizontalAlignment("left");
+  sh.setRowHeight(1, 36);
+  if (rows > 1) sh.setRowHeights(2, rows - 1, 26);
+  all.setBorder(null, null, true, null, null, true, STYLE.line, SpreadsheetApp.BorderStyle.SOLID);
+  widths.forEach(function (w, i) { sh.setColumnWidth(i + 1, w); });
+}
+
+// Cards: a full card (10 stamps, waiting for its free drink) shows in black.
+function styleCardsRules_(sh) {
+  if (!sh) return;
+  var range = sh.getRange("A2:G");
+  var full = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=VALUE($B2)>=' + CARD_SIZE)
+    .setBackground(STYLE.ink).setFontColor(STYLE.paper).setBold(true)
+    .setRanges([range]).build();
+  sh.setConditionalFormatRules([full]);
+  sh.getRange("B2:B").setHorizontalAlignment("center");
+  sh.getRange("E2:E").setHorizontalAlignment("center");
+}
+
+// Log: free drinks in black, expired cards in grey italics, stamps left plain.
+function styleLogRules_(sh) {
+  if (!sh) return;
+  var range = sh.getRange("A2:I");
+  var free = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=$D2="free_drink"')
+    .setBackground(STYLE.ink).setFontColor(STYLE.paper).setBold(true)
+    .setRanges([range]).build();
+  var expired = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=$D2="expired"')
+    .setFontColor(STYLE.muted).setItalic(true)
+    .setRanges([range]).build();
+  sh.setConditionalFormatRules([free, expired]);
+  sh.getRange("E2:G").setHorizontalAlignment("center");
+  sh.getRange("I2:I").setHorizontalAlignment("center");
+}
+
+// Summary: a poster-style title, numbers in big bold type, small tables for hour and drink.
+function styleSummary_(sh) {
+  if (!sh) return;
+  var ink = STYLE.ink, solid = SpreadsheetApp.BorderStyle.SOLID, thick = SpreadsheetApp.BorderStyle.SOLID_THICK;
+  sh.setTabColor(ink);
+  sh.setHiddenGridlines(true);
+  var page = sh.getRange(1, 1, Math.max(sh.getMaxRows(), 40), Math.max(sh.getMaxColumns(), 9));
+  page.setBackground(STYLE.paper).setFontFamily(STYLE.sans).setFontSize(10).setFontColor(ink)
+    .setVerticalAlignment("middle").setBorder(false, false, false, false, false, false);
+
+  sh.getRange("A1").setFontFamily(STYLE.poster).setFontSize(20).setFontWeight("bold");
+  sh.getRange("A2").setFontColor(STYLE.muted).setFontStyle("italic");
+  sh.setRowHeight(1, 44);
+  sh.setRowHeights(4, 19, 30);
+
+  // Key numbers, rows 4 to 13
+  sh.getRange("A4:B13").setBackground(STYLE.white)
+    .setBorder(true, true, true, true, null, true, ink, solid);
+  sh.getRange("A4:B13").setBorder(true, true, true, true, null, null, ink, thick);
+  sh.getRange("B4:B13").setFontFamily(STYLE.poster).setFontSize(14).setFontWeight("bold").setHorizontalAlignment("right");
+
+  // Day of the week, rows 15 to 22
+  sh.getRange("A15").setFontFamily(STYLE.poster).setFontSize(11).setFontWeight("bold");
+  sh.getRange("A15:B15").setBorder(null, null, true, null, null, null, ink, thick);
+  sh.getRange("A16:B22").setBackground(STYLE.white).setBorder(null, true, true, true, null, true, STYLE.line, solid);
+  sh.getRange("B16:B22").setFontWeight("bold").setHorizontalAlignment("right");
+
+  // Stamps by hour (D:E) and free drinks by drink (G:H): filled by QUERY, so style a fixed block of rows
+  [["D4", "D5:E5", "D6:E28"], ["G4", "G5:H5", "G6:H28"]].forEach(function (t) {
+    sh.getRange(t[0]).setFontFamily(STYLE.poster).setFontSize(11).setFontWeight("bold");
+    sh.getRange(t[1]).setBackground(ink).setFontColor(STYLE.paper).setFontWeight("bold");
+    sh.getRange(t[2]).setBorder(null, null, null, null, null, true, STYLE.line, solid);
+  });
+  sh.getRange("E5:E28").setHorizontalAlignment("right");
+  sh.getRange("H5:H28").setHorizontalAlignment("right");
+
+  sh.setColumnWidth(1, 300); sh.setColumnWidth(2, 90); sh.setColumnWidth(3, 28);
+  sh.setColumnWidth(4, 80);  sh.setColumnWidth(5, 80); sh.setColumnWidth(6, 28);
+  sh.setColumnWidth(7, 200); sh.setColumnWidth(8, 100);
 }
 
 // ---------------------------------------------------------------------------------------------------------
