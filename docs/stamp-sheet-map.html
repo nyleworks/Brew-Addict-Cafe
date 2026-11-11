@@ -1,0 +1,228 @@
+<title>Brew Addict Stamp Sheet</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Lexend:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one narrow column; a flow strip, then each tab drawn as a sheet window with its column guide underneath. Brand: black and white only. */
+:root{
+  --paper:#f5f2ec; --paper-2:#ece7df; --cell:#ffffff; --ink:#161412; --muted:#5c5750; --line:#cfc8bc; --grid:#e3ddd2; --hl:#fff4c2;
+  --f-poster:Archivo,"Arial Black",system-ui,sans-serif; --f-sans:Lexend,"Century Gothic",system-ui,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#121110;--paper-2:#1c1a18;--cell:#1a1816;--ink:#f2ede4;--muted:#a8a196;--line:#3a3631;--grid:#2a2724;--hl:#3a3320;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#121110;--paper-2:#1c1a18;--cell:#1a1816;--ink:#f2ede4;--muted:#a8a196;--line:#3a3631;--grid:#2a2724;--hl:#3a3320;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:15px/1.55 var(--f-sans)}
+.wrap{max-width:1040px;margin:0 auto;padding-block:32px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:48px}
+h1,h2{font-family:var(--f-poster);text-transform:uppercase;letter-spacing:.01em;line-height:1.05;margin:0;text-wrap:balance}
+h1{font-size:clamp(30px,6vw,52px);font-weight:900}
+h2{font-size:22px;font-weight:800}
+h3{font:600 15px/1.3 var(--f-sans);margin:0}
+p{margin:0;max-width:65ch}
+.lede{color:var(--muted);font-size:16px;margin-top:10px}
+.eyebrow{font:600 12px/1 var(--f-sans);text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+section{display:grid;gap:16px;min-width:0}
+code,.mono{font-family:var(--f-mono);font-size:.92em}
+.ex{display:inline-block;border:1.5px dashed var(--ink);border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+
+/* Flow */
+.flow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.node{border:2.5px solid var(--ink);border-radius:18px;padding:14px 16px;background:var(--cell);display:grid;gap:6px;min-width:0}
+.node.dark{background:var(--ink);color:var(--paper)}
+.node.dark .nmuted{color:var(--paper);opacity:.75}
+.nmuted{color:var(--muted);font-size:13.5px}
+.arrow{font:700 13px/1.2 var(--f-sans);text-align:center;color:var(--muted);padding:2px 0}
+.arrow b{display:block;font-size:20px;color:var(--ink)}
+.span2{grid-column:1/-1}
+.tabs3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.tabnode{border:2px solid var(--ink);border-radius:12px;padding:12px 14px;background:var(--cell);display:grid;gap:4px;min-width:0}
+.tabnode .tname{font:800 16px/1 var(--f-poster);text-transform:uppercase}
+.pill{display:inline-block;font:600 11px/1 var(--f-sans);text-transform:uppercase;letter-spacing:.08em;border:1.5px solid currentColor;border-radius:999px;padding:4px 8px;width:max-content}
+@media (max-width:640px){.flow,.tabs3{grid-template-columns:1fr}}
+
+/* Sheet window */
+.sheet{border:2.5px solid var(--ink);border-radius:14px;overflow:hidden;background:var(--cell);box-shadow:5px 5px 0 var(--ink)}
+.bar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1.5px solid var(--line);background:var(--paper-2);font-size:13px}
+.bar .fx{font-family:var(--f-mono);color:var(--muted);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0}
+.bar .fx b{color:var(--ink);font-weight:500}
+.scroll{overflow-x:auto}
+table.grid{border-collapse:collapse;font:13px/1.3 var(--f-mono);font-variant-numeric:tabular-nums;width:max-content;min-width:100%}
+.grid th,.grid td{border:1px solid var(--grid);padding:6px 10px;white-space:nowrap;text-align:left}
+.grid thead th{background:var(--paper-2);color:var(--muted);font-weight:500;text-align:center;font-size:11.5px;padding:3px 10px}
+.grid td.rn{background:var(--paper-2);color:var(--muted);text-align:center;font-size:11.5px;width:34px;padding:6px 4px}
+.grid tr.head td:not(.rn){font-weight:600;background:var(--cell);border-bottom:2px solid var(--ink)}
+.grid td.num{text-align:right}
+.grid td.dim{color:var(--muted)}
+.grid tr.new td:not(.rn){background:var(--hl)}
+.grid td.label{font-family:var(--f-sans)}
+.grid td.title{font:800 16px/1.2 var(--f-poster);text-transform:uppercase}
+.grid td.bold{font-weight:600;font-family:var(--f-sans)}
+.tabstrip{display:flex;gap:2px;padding:0 10px;border-top:1.5px solid var(--line);background:var(--paper-2);font:500 13px/1 var(--f-sans);overflow-x:auto}
+.tabstrip span{padding:10px 14px;color:var(--muted)}
+.tabstrip span.on{background:var(--cell);color:var(--ink);font-weight:600;border-bottom:3px solid var(--ink)}
+
+/* Column guide */
+.cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px 18px;margin:0;padding:0;list-style:none}
+.cols li{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:baseline;padding:10px 0;border-top:1.5px solid var(--line);min-width:0}
+.cols .l{font:600 12px/1 var(--f-mono);border:1.5px solid var(--ink);border-radius:6px;padding:3px 6px;grid-row:span 2}
+.cols .n{font:500 13.5px/1.3 var(--f-mono)}
+.cols .d{color:var(--muted);font-size:13.5px;grid-column:2}
+.note{border-left:4px solid var(--ink);padding:4px 0 4px 14px;color:var(--muted);font-size:14px}
+.rules{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.rule{border:2px solid var(--ink);border-radius:14px;padding:12px 14px;display:grid;gap:4px;background:var(--cell)}
+.rule strong{font:800 22px/1 var(--f-poster)}
+.rule span{color:var(--muted);font-size:13.5px}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Stamp card · Google Sheet</div>
+    <h1>Brew Addict stamp sheet</h1>
+    <p class="lede">The Google Sheet behind the stamp card has three tabs. The Apps Script writes to them for you, so nobody types in the sheet. This page shows what each tab holds and how a stamp gets there. The rows below are made-up examples.</p>
+  </header>
+
+  <section>
+    <h2>How a stamp reaches the sheet</h2>
+    <div class="flow">
+      <div class="node">
+        <span class="pill">Customer's phone</span>
+        <h3>Stamp card on the website</h3>
+        <p class="nmuted">The phone makes a random 22-character code once and shows it as a QR. No name or phone number.</p>
+      </div>
+      <div class="node">
+        <span class="pill">Cafe phone</span>
+        <h3>Staff page</h3>
+        <p class="nmuted">Staff scan the QR with the camera. Signed in to the cafe Google account, they tap <b>Add stamp</b> or <b>Give free drink</b>.</p>
+      </div>
+      <div class="arrow">Read only: "how many stamps?"<b>↓</b></div>
+      <div class="arrow">Add stamp / Give free drink<b>↓</b></div>
+      <div class="node dark span2">
+        <span class="pill">Apps Script</span>
+        <h3>Code.gs, bound to the sheet</h3>
+        <p class="nmuted">Turns the card code into a one-way fingerprint, checks the rules (one stamp a day, 10 for a free drink, card ends a month after its first stamp), then writes. A nightly clean-up runs at 4am Kundasang time.</p>
+      </div>
+      <div class="arrow span2"><b>↓</b></div>
+      <div class="tabs3 span2">
+        <div class="tabnode"><span class="tname">Summary</span><span class="nmuted">Formulas only. Counts everything from the Log tab.</span></div>
+        <div class="tabnode"><span class="tname">Cards</span><span class="nmuted">One row per card. The row is <b>updated</b> on each stamp.</span></div>
+        <div class="tabnode"><span class="tname">Log</span><span class="nmuted">One row per event. A new row is <b>added</b> each time.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div><div class="eyebrow">Tab 1 · opens first</div><h2>Summary</h2></div>
+    <p>Built by <code>setup()</code> and filled by formulas that read the Log tab. It updates by itself. The staff page shows rows 4 to 15 under "Numbers".</p>
+    <div class="sheet">
+      <div class="bar"><span class="ex">Example numbers</span><span class="fx">B4 <b>=IFERROR(COUNTUNIQUE(FILTER(Log!C2:C, Log!D2:D="stamp")), 0)</b></span></div>
+      <div class="scroll"><table class="grid">
+        <thead><tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th></tr></thead>
+        <tbody>
+          <tr><td class="rn">1</td><td class="title" colspan="2">Brew Addict stamp card</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">2</td><td class="label dim" colspan="2">Updates by itself from the Log tab. Please don't edit this tab.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">3</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">4</td><td class="label">Members (cards with at least 1 stamp)</td><td class="num">86</td><td></td><td class="bold">Stamps by hour</td><td></td><td></td><td class="bold">Free drinks by drink</td><td></td></tr>
+          <tr><td class="rn">5</td><td class="label">Active members, last 30 days</td><td class="num">41</td><td></td><td class="bold">Hour</td><td class="bold">Stamps</td><td></td><td class="bold">Drink</td><td class="bold">Free drinks</td></tr>
+          <tr><td class="rn">6</td><td class="label">Stamps this week (from Monday)</td><td class="num">37</td><td></td><td class="num">8</td><td class="num">22</td><td></td><td class="label">Spanish Latte</td><td class="num">5</td></tr>
+          <tr><td class="rn">7</td><td class="label">Stamps this month</td><td class="num">52</td><td></td><td class="num">9</td><td class="num">31</td><td></td><td class="label">Brew Addict Signature</td><td class="num">4</td></tr>
+          <tr><td class="rn">8</td><td class="label">Stamps, all time</td><td class="num">412</td><td></td><td class="num">10</td><td class="num">48</td><td></td><td class="label">Matcha Strawberry</td><td class="num">3</td></tr>
+          <tr><td class="rn">9</td><td class="label">Free drinks given this month</td><td class="num">3</td><td></td><td class="num">11</td><td class="num">39</td><td></td><td class="label">Caramel Macchiato</td><td class="num">2</td></tr>
+          <tr><td class="rn">10</td><td class="label">Free drinks given, all time</td><td class="num">17</td><td></td><td class="num">…</td><td class="num">…</td><td></td><td class="label">…</td><td class="num">…</td></tr>
+          <tr><td class="rn">11</td><td class="label">Cards that reached 10 stamps</td><td class="num">19</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">12</td><td class="label">Cards that expired unfinished</td><td class="num">24</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">13</td><td class="label">Average days to fill a card</td><td class="num">21.4</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">14</td><td class="label">Lost cards rescued by staff, this month</td><td class="num">1</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">15</td><td class="label">Cards moved to a new phone, this month</td><td class="num">2</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">16</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">17</td><td class="bold">Stamps by day of the week</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">18</td><td class="label">Mon</td><td class="num">48</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">19</td><td class="label">Tue</td><td class="num">45</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">20</td><td class="label">Wed</td><td class="num">51</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">21</td><td class="label">Thu</td><td class="num">49</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">22</td><td class="label">Fri</td><td class="num">62</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">23</td><td class="label">Sat</td><td class="num">87</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">24</td><td class="label">Sun</td><td class="num">70</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        </tbody>
+      </table></div>
+      <div class="tabstrip"><span class="on">Summary</span><span>Cards</span><span>Log</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div><div class="eyebrow">Tab 2</div><h2>Cards</h2></div>
+    <p>One row for every card that has ever been stamped. Each stamp or free drink changes that card's row in place. Every column is stored as plain text so codes and dates don't get reformatted.</p>
+    <div class="sheet">
+      <div class="bar"><span class="ex">Example rows</span><span class="fx">Header row frozen and bold · columns A:J</span></div>
+      <div class="scroll"><table class="grid">
+        <thead><tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th></tr></thead>
+        <tbody>
+          <tr class="head"><td class="rn">1</td><td>card</td><td>stamps</td><td>cardStart</td><td>lastStampDate</td><td>freeDrinks</td><td>createdAt</td><td>lastActivity</td><td>device</td><td>moves</td><td>rescued</td></tr>
+          <tr><td class="rn">2</td><td>a3f9c2e17b4d08e6519fa2c7d3b06e14</td><td class="num">7</td><td>2026-10-20T03:12:44.000Z</td><td>2026-11-06</td><td class="num">1</td><td>2026-09-02T02:40:11.000Z</td><td>2026-11-06T06:21:09.000Z</td><td>7c1e09ab45f2d830</td><td class="num">0</td><td class="dim">(empty)</td></tr>
+          <tr class="new"><td class="rn">3</td><td>5e0b8d21c94f7a3e6d12b8f04a9c5e73</td><td class="num">10</td><td>2026-10-15T01:58:30.000Z</td><td>2026-11-07</td><td class="num">0</td><td>2026-10-15T01:58:30.000Z</td><td>2026-11-07T02:32:18.000Z</td><td>e4a07b19c3d65f28</td><td class="num">1</td><td class="dim">(empty)</td></tr>
+          <tr><td class="rn">4</td><td>9c47e1a0b3f25d86e7c4019ab2d6f358</td><td class="num">0</td><td class="dim">(empty)</td><td>2026-11-05</td><td class="num">2</td><td>2026-07-11T05:03:52.000Z</td><td>2026-11-07T00:05:41.000Z</td><td>02bf8e6d7a91c43e</td><td class="num">0</td><td>2026-10-02</td></tr>
+          <tr><td class="rn">5</td><td>d81f6a3c0e927b54a1c8e3f60d2b9a47</td><td class="num">0</td><td class="dim">(empty)</td><td>2026-10-21</td><td class="num">0</td><td>2026-10-03T04:44:07.000Z</td><td>2026-10-21T07:15:26.000Z</td><td>9d3a51f0e8b7c624</td><td class="num">0</td><td class="dim">(empty)</td></tr>
+        </tbody>
+      </table></div>
+      <div class="tabstrip"><span>Summary</span><span class="on">Cards</span><span>Log</span></div>
+    </div>
+    <p class="nmuted">Row 2 is part way through a card. Row 3 (highlighted) just got its 10th stamp and is waiting for a free drink. Row 4 got a free drink this morning, so it reset to 0 and its free drink count went up. Row 5 ran out of time with 3 stamps and was cleared by the nightly clean-up.</p>
+    <ul class="cols">
+      <li><span class="l">A</span><span class="n">card</span><span class="d">A one-way fingerprint of the customer's code (32 characters). The real code never reaches the sheet, so a copy of the sheet can't be used to stamp cards.</span></li>
+      <li><span class="l">B</span><span class="n">stamps</span><span class="d">Stamps on the current card, 0 to 10.</span></li>
+      <li><span class="l">C</span><span class="n">cardStart</span><span class="d">When the first stamp of this card was added. The card ends one month after this. Empty when the card is at 0.</span></li>
+      <li><span class="l">D</span><span class="n">lastStampDate</span><span class="d">Day of the last stamp, in Kundasang time. Used for "one stamp a day".</span></li>
+      <li><span class="l">E</span><span class="n">freeDrinks</span><span class="d">How many free drinks this card has had, ever.</span></li>
+      <li><span class="l">F</span><span class="n">createdAt</span><span class="d">When this row was first made (UTC).</span></li>
+      <li><span class="l">G</span><span class="n">lastActivity</span><span class="d">Last stamp or free drink (UTC). A card with nothing here for about 6 months is deleted.</span></li>
+      <li><span class="l">H</span><span class="n">device</span><span class="d">A one-way fingerprint of the phone that got this card's stamps (from the tag in its QR code). If the card shows up on another phone, the staff page asks staff to confirm first.</span></li>
+      <li><span class="l">I</span><span class="n">moves</span><span class="d">How many times staff confirmed this card moving to a different phone. A high number is worth a look.</span></li>
+      <li><span class="l">J</span><span class="n">rescued</span><span class="d">The day staff put a lost card's stamps on this card, if they did. Only allowed once per card.</span></li>
+    </ul>
+  </section>
+
+  <section>
+    <div><div class="eyebrow">Tab 3</div><h2>Log</h2></div>
+    <p>A history of everything that happened, one new row at the bottom per event. Rows are never changed afterwards. The Summary tab counts from here.</p>
+    <div class="sheet">
+      <div class="bar"><span class="ex">Example rows</span><span class="fx">Header row frozen and bold · columns A:J</span></div>
+      <div class="scroll"><table class="grid">
+        <thead><tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th></tr></thead>
+        <tbody>
+          <tr class="head"><td class="rn">1</td><td>time</td><td>date</td><td>card</td><td>event</td><td>stampNumber</td><td>weekday</td><td>hour</td><td>drink</td><td>daysToFill</td><td>note</td></tr>
+          <tr><td class="rn">…</td><td class="dim">…</td><td class="dim">…</td><td class="dim">…</td><td class="dim">…</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">410</td><td>2026-11-04 04:00</td><td>2026-11-04</td><td>d81f6a3c0e92</td><td>expired</td><td class="num">3</td><td>Wed</td><td class="num">4</td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">411</td><td>2026-11-06 14:21</td><td>2026-11-06</td><td>a3f9c2e17b4d</td><td>stamp</td><td class="num">7</td><td>Fri</td><td class="num">14</td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">412</td><td>2026-11-07 08:05</td><td>2026-11-07</td><td>9c47e1a0b3f2</td><td>free_drink</td><td></td><td>Sat</td><td class="num">8</td><td>Spanish Latte</td><td class="num">24</td><td></td></tr>
+          <tr class="new"><td class="rn">413</td><td>2026-11-07 10:32</td><td>2026-11-07</td><td>5e0b8d21c94f</td><td>stamp</td><td class="num">10</td><td>Sat</td><td class="num">10</td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">414</td><td>2026-11-07 19:48</td><td>2026-11-07</td><td>02bf8e6d7a91</td><td>moved</td><td class="num">4</td><td>Sat</td><td class="num">19</td><td></td><td></td><td>Move 1, confirmed by staff</td></tr>
+          <tr><td class="rn">415</td><td>2026-11-07 20:10</td><td>2026-11-07</td><td>b61f0c27e8a4</td><td>rescue</td><td class="num">6</td><td>Sat</td><td class="num">20</td><td></td><td></td><td>Phone was reset, regular since Sept</td></tr>
+        </tbody>
+      </table></div>
+      <div class="tabstrip"><span>Summary</span><span>Cards</span><span class="on">Log</span></div>
+    </div>
+    <ul class="cols">
+      <li><span class="l">A</span><span class="n">time</span><span class="d">Date and time of the event, in Kundasang time.</span></li>
+      <li><span class="l">B</span><span class="n">date</span><span class="d">Just the day, as text.</span></li>
+      <li><span class="l">C</span><span class="n">card</span><span class="d">First 12 characters of the card fingerprint, enough to match it to the Cards tab.</span></li>
+      <li><span class="l">D</span><span class="n">event</span><span class="d"><code>stamp</code>, <code>free_drink</code>, <code>expired</code>, <code>moved</code> (staff confirmed the card on a new phone) or <code>rescue</code> (staff put a lost card's stamps on a new card).</span></li>
+      <li><span class="l">E</span><span class="n">stampNumber</span><span class="d">For a stamp: which stamp it was (10 means the card is full). For expired: how many stamps were lost. For rescue: how many stamps staff put on.</span></li>
+      <li><span class="l">F</span><span class="n">weekday</span><span class="d">Mon to Sun. Feeds "Stamps by day of the week".</span></li>
+      <li><span class="l">G</span><span class="n">hour</span><span class="d">0 to 23. Feeds "Stamps by hour".</span></li>
+      <li><span class="l">H</span><span class="n">drink</span><span class="d">Free drinks only: the drink staff picked, if they picked one.</span></li>
+      <li><span class="l">I</span><span class="n">daysToFill</span><span class="d">Free drinks only: days from the first stamp to the free drink.</span></li>
+      <li><span class="l">J</span><span class="n">note</span><span class="d">For rescue: the reason staff typed. For moved: which move this was.</span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>What each action writes</h2>
+    <div class="rules">
+      <div class="rule"><strong>Add stamp</strong><span>Cards: stamps +1, lastStampDate = today, lastActivity = now (cardStart set on the first stamp). Log: one <code>stamp</code> row.</span></div>
+      <div class="rule"><strong>Give free drink</strong><span>Only at 10 stamps. Cards: stamps back to 0, cardStart cleared, freeDrinks +1. Log: one <code>free_drink</code> row with the drink and days to fill.</span></div>
+      <div class="rule"><strong>Card on a new phone</strong><span>Staff tap "Yes, it's theirs". Cards: device = the new phone, moves +1. Log: one <code>moved</code> row.</span></div>
+      <div class="rule"><strong>Lost card rescue</strong><span>Only on an empty card, once per card, 3 a day for the cafe, 1 to 9 stamps, reason required. Cards: stamps = that number, rescued = today. Log: one <code>rescue</code> row with the reason.</span></div>
+      <div class="rule"><strong>Nightly 4am</strong><span>Unfinished cards past their month go back to 0 and log an <code>expired</code> row. Cards idle about 6 months are deleted from Cards.</span></div>
+      <div class="rule"><strong>Customer checks card</strong><span>Reads the Cards row only. Writes nothing. Limited to 40 checks a minute per card and 1,200 a minute in total; past that the card is told to wait 20 seconds.</span></div>
+    </div>
+    <p class="note">Please don't type in the Cards or Log tabs. A typo in the card column would disconnect that customer's stamps. If something needs fixing, ask Claude.</p>
+  </section>
+</div>
