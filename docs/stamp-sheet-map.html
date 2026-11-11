@@ -111,7 +111,7 @@ table.grid{border-collapse:collapse;font:13px/1.3 var(--f-mono);font-variant-num
 
   <section>
     <div><div class="eyebrow">Tab 1 · opens first</div><h2>Summary</h2></div>
-    <p>Built by <code>setup()</code> and filled by formulas that read the Log tab. It updates by itself. The staff page shows rows 4 to 13 under "Numbers".</p>
+    <p>Built by <code>setup()</code> and filled by formulas that read the Log tab. It updates by itself. The staff page shows rows 4 to 15 under "Numbers".</p>
     <div class="sheet">
       <div class="bar"><span class="ex">Example numbers</span><span class="fx">B4 <b>=IFERROR(COUNTUNIQUE(FILTER(Log!C2:C, Log!D2:D="stamp")), 0)</b></span></div>
       <div class="scroll"><table class="grid">
@@ -130,15 +130,17 @@ table.grid{border-collapse:collapse;font:13px/1.3 var(--f-mono);font-variant-num
           <tr><td class="rn">11</td><td class="label">Cards that reached 10 stamps</td><td class="num">19</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
           <tr><td class="rn">12</td><td class="label">Cards that expired unfinished</td><td class="num">24</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
           <tr><td class="rn">13</td><td class="label">Average days to fill a card</td><td class="num">21.4</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-          <tr><td class="rn">14</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-          <tr><td class="rn">15</td><td class="bold">Stamps by day of the week</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-          <tr><td class="rn">16</td><td class="label">Mon</td><td class="num">48</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-          <tr><td class="rn">17</td><td class="label">Tue</td><td class="num">45</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-          <tr><td class="rn">18</td><td class="label">Wed</td><td class="num">51</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-          <tr><td class="rn">19</td><td class="label">Thu</td><td class="num">49</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-          <tr><td class="rn">20</td><td class="label">Fri</td><td class="num">62</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-          <tr><td class="rn">21</td><td class="label">Sat</td><td class="num">87</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-          <tr><td class="rn">22</td><td class="label">Sun</td><td class="num">70</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">14</td><td class="label">Lost cards rescued by staff, this month</td><td class="num">1</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">15</td><td class="label">Cards moved to a new phone, this month</td><td class="num">2</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">16</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">17</td><td class="bold">Stamps by day of the week</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">18</td><td class="label">Mon</td><td class="num">48</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">19</td><td class="label">Tue</td><td class="num">45</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">20</td><td class="label">Wed</td><td class="num">51</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">21</td><td class="label">Thu</td><td class="num">49</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">22</td><td class="label">Fri</td><td class="num">62</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">23</td><td class="label">Sat</td><td class="num">87</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">24</td><td class="label">Sun</td><td class="num">70</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
         </tbody>
       </table></div>
       <div class="tabstrip"><span class="on">Summary</span><span>Cards</span><span>Log</span></div>
@@ -149,15 +151,15 @@ table.grid{border-collapse:collapse;font:13px/1.3 var(--f-mono);font-variant-num
     <div><div class="eyebrow">Tab 2</div><h2>Cards</h2></div>
     <p>One row for every card that has ever been stamped. Each stamp or free drink changes that card's row in place. Every column is stored as plain text so codes and dates don't get reformatted.</p>
     <div class="sheet">
-      <div class="bar"><span class="ex">Example rows</span><span class="fx">Header row frozen and bold · columns A:G</span></div>
+      <div class="bar"><span class="ex">Example rows</span><span class="fx">Header row frozen and bold · columns A:J</span></div>
       <div class="scroll"><table class="grid">
-        <thead><tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th></tr></thead>
+        <thead><tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th></tr></thead>
         <tbody>
-          <tr class="head"><td class="rn">1</td><td>card</td><td>stamps</td><td>cardStart</td><td>lastStampDate</td><td>freeDrinks</td><td>createdAt</td><td>lastActivity</td></tr>
-          <tr><td class="rn">2</td><td>a3f9c2e17b4d08e6519fa2c7d3b06e14</td><td class="num">7</td><td>2026-10-20T03:12:44.000Z</td><td>2026-11-06</td><td class="num">1</td><td>2026-09-02T02:40:11.000Z</td><td>2026-11-06T06:21:09.000Z</td></tr>
-          <tr class="new"><td class="rn">3</td><td>5e0b8d21c94f7a3e6d12b8f04a9c5e73</td><td class="num">10</td><td>2026-10-15T01:58:30.000Z</td><td>2026-11-07</td><td class="num">0</td><td>2026-10-15T01:58:30.000Z</td><td>2026-11-07T02:32:18.000Z</td></tr>
-          <tr><td class="rn">4</td><td>9c47e1a0b3f25d86e7c4019ab2d6f358</td><td class="num">0</td><td class="dim">(empty)</td><td>2026-11-05</td><td class="num">2</td><td>2026-07-11T05:03:52.000Z</td><td>2026-11-07T00:05:41.000Z</td></tr>
-          <tr><td class="rn">5</td><td>d81f6a3c0e927b54a1c8e3f60d2b9a47</td><td class="num">0</td><td class="dim">(empty)</td><td>2026-10-21</td><td class="num">0</td><td>2026-10-03T04:44:07.000Z</td><td>2026-10-21T07:15:26.000Z</td></tr>
+          <tr class="head"><td class="rn">1</td><td>card</td><td>stamps</td><td>cardStart</td><td>lastStampDate</td><td>freeDrinks</td><td>createdAt</td><td>lastActivity</td><td>device</td><td>moves</td><td>rescued</td></tr>
+          <tr><td class="rn">2</td><td>a3f9c2e17b4d08e6519fa2c7d3b06e14</td><td class="num">7</td><td>2026-10-20T03:12:44.000Z</td><td>2026-11-06</td><td class="num">1</td><td>2026-09-02T02:40:11.000Z</td><td>2026-11-06T06:21:09.000Z</td><td>7c1e09ab45f2d830</td><td class="num">0</td><td class="dim">(empty)</td></tr>
+          <tr class="new"><td class="rn">3</td><td>5e0b8d21c94f7a3e6d12b8f04a9c5e73</td><td class="num">10</td><td>2026-10-15T01:58:30.000Z</td><td>2026-11-07</td><td class="num">0</td><td>2026-10-15T01:58:30.000Z</td><td>2026-11-07T02:32:18.000Z</td><td>e4a07b19c3d65f28</td><td class="num">1</td><td class="dim">(empty)</td></tr>
+          <tr><td class="rn">4</td><td>9c47e1a0b3f25d86e7c4019ab2d6f358</td><td class="num">0</td><td class="dim">(empty)</td><td>2026-11-05</td><td class="num">2</td><td>2026-07-11T05:03:52.000Z</td><td>2026-11-07T00:05:41.000Z</td><td>02bf8e6d7a91c43e</td><td class="num">0</td><td>2026-10-02</td></tr>
+          <tr><td class="rn">5</td><td>d81f6a3c0e927b54a1c8e3f60d2b9a47</td><td class="num">0</td><td class="dim">(empty)</td><td>2026-10-21</td><td class="num">0</td><td>2026-10-03T04:44:07.000Z</td><td>2026-10-21T07:15:26.000Z</td><td>9d3a51f0e8b7c624</td><td class="num">0</td><td class="dim">(empty)</td></tr>
         </tbody>
       </table></div>
       <div class="tabstrip"><span>Summary</span><span class="on">Cards</span><span>Log</span></div>
@@ -171,6 +173,9 @@ table.grid{border-collapse:collapse;font:13px/1.3 var(--f-mono);font-variant-num
       <li><span class="l">E</span><span class="n">freeDrinks</span><span class="d">How many free drinks this card has had, ever.</span></li>
       <li><span class="l">F</span><span class="n">createdAt</span><span class="d">When this row was first made (UTC).</span></li>
       <li><span class="l">G</span><span class="n">lastActivity</span><span class="d">Last stamp or free drink (UTC). A card with nothing here for about 6 months is deleted.</span></li>
+      <li><span class="l">H</span><span class="n">device</span><span class="d">A one-way fingerprint of the phone that got this card's stamps (from the tag in its QR code). If the card shows up on another phone, the staff page asks staff to confirm first.</span></li>
+      <li><span class="l">I</span><span class="n">moves</span><span class="d">How many times staff confirmed this card moving to a different phone. A high number is worth a look.</span></li>
+      <li><span class="l">J</span><span class="n">rescued</span><span class="d">The day staff put a lost card's stamps on this card, if they did. Only allowed once per card.</span></li>
     </ul>
   </section>
 
@@ -178,16 +183,18 @@ table.grid{border-collapse:collapse;font:13px/1.3 var(--f-mono);font-variant-num
     <div><div class="eyebrow">Tab 3</div><h2>Log</h2></div>
     <p>A history of everything that happened, one new row at the bottom per event. Rows are never changed afterwards. The Summary tab counts from here.</p>
     <div class="sheet">
-      <div class="bar"><span class="ex">Example rows</span><span class="fx">Header row frozen and bold · columns A:I</span></div>
+      <div class="bar"><span class="ex">Example rows</span><span class="fx">Header row frozen and bold · columns A:J</span></div>
       <div class="scroll"><table class="grid">
-        <thead><tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th></tr></thead>
+        <thead><tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th></tr></thead>
         <tbody>
-          <tr class="head"><td class="rn">1</td><td>time</td><td>date</td><td>card</td><td>event</td><td>stampNumber</td><td>weekday</td><td>hour</td><td>drink</td><td>daysToFill</td></tr>
-          <tr><td class="rn">…</td><td class="dim">…</td><td class="dim">…</td><td class="dim">…</td><td class="dim">…</td><td></td><td></td><td></td><td></td><td></td></tr>
-          <tr><td class="rn">410</td><td>2026-11-04 04:00</td><td>2026-11-04</td><td>d81f6a3c0e92</td><td>expired</td><td class="num">3</td><td>Wed</td><td class="num">4</td><td></td><td></td></tr>
-          <tr><td class="rn">411</td><td>2026-11-06 14:21</td><td>2026-11-06</td><td>a3f9c2e17b4d</td><td>stamp</td><td class="num">7</td><td>Fri</td><td class="num">14</td><td></td><td></td></tr>
-          <tr><td class="rn">412</td><td>2026-11-07 08:05</td><td>2026-11-07</td><td>9c47e1a0b3f2</td><td>free_drink</td><td></td><td>Sat</td><td class="num">8</td><td>Spanish Latte</td><td class="num">24</td></tr>
-          <tr class="new"><td class="rn">413</td><td>2026-11-07 10:32</td><td>2026-11-07</td><td>5e0b8d21c94f</td><td>stamp</td><td class="num">10</td><td>Sat</td><td class="num">10</td><td></td><td></td></tr>
+          <tr class="head"><td class="rn">1</td><td>time</td><td>date</td><td>card</td><td>event</td><td>stampNumber</td><td>weekday</td><td>hour</td><td>drink</td><td>daysToFill</td><td>note</td></tr>
+          <tr><td class="rn">…</td><td class="dim">…</td><td class="dim">…</td><td class="dim">…</td><td class="dim">…</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">410</td><td>2026-11-04 04:00</td><td>2026-11-04</td><td>d81f6a3c0e92</td><td>expired</td><td class="num">3</td><td>Wed</td><td class="num">4</td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">411</td><td>2026-11-06 14:21</td><td>2026-11-06</td><td>a3f9c2e17b4d</td><td>stamp</td><td class="num">7</td><td>Fri</td><td class="num">14</td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">412</td><td>2026-11-07 08:05</td><td>2026-11-07</td><td>9c47e1a0b3f2</td><td>free_drink</td><td></td><td>Sat</td><td class="num">8</td><td>Spanish Latte</td><td class="num">24</td><td></td></tr>
+          <tr class="new"><td class="rn">413</td><td>2026-11-07 10:32</td><td>2026-11-07</td><td>5e0b8d21c94f</td><td>stamp</td><td class="num">10</td><td>Sat</td><td class="num">10</td><td></td><td></td><td></td></tr>
+          <tr><td class="rn">414</td><td>2026-11-07 19:48</td><td>2026-11-07</td><td>02bf8e6d7a91</td><td>moved</td><td class="num">4</td><td>Sat</td><td class="num">19</td><td></td><td></td><td>Move 1, confirmed by staff</td></tr>
+          <tr><td class="rn">415</td><td>2026-11-07 20:10</td><td>2026-11-07</td><td>b61f0c27e8a4</td><td>rescue</td><td class="num">6</td><td>Sat</td><td class="num">20</td><td></td><td></td><td>Phone was reset, regular since Sept</td></tr>
         </tbody>
       </table></div>
       <div class="tabstrip"><span>Summary</span><span>Cards</span><span class="on">Log</span></div>
@@ -196,12 +203,13 @@ table.grid{border-collapse:collapse;font:13px/1.3 var(--f-mono);font-variant-num
       <li><span class="l">A</span><span class="n">time</span><span class="d">Date and time of the event, in Kundasang time.</span></li>
       <li><span class="l">B</span><span class="n">date</span><span class="d">Just the day, as text.</span></li>
       <li><span class="l">C</span><span class="n">card</span><span class="d">First 12 characters of the card fingerprint, enough to match it to the Cards tab.</span></li>
-      <li><span class="l">D</span><span class="n">event</span><span class="d"><code>stamp</code>, <code>free_drink</code> or <code>expired</code>.</span></li>
-      <li><span class="l">E</span><span class="n">stampNumber</span><span class="d">For a stamp: which stamp it was (10 means the card is full). For expired: how many stamps were lost.</span></li>
+      <li><span class="l">D</span><span class="n">event</span><span class="d"><code>stamp</code>, <code>free_drink</code>, <code>expired</code>, <code>moved</code> (staff confirmed the card on a new phone) or <code>rescue</code> (staff put a lost card's stamps on a new card).</span></li>
+      <li><span class="l">E</span><span class="n">stampNumber</span><span class="d">For a stamp: which stamp it was (10 means the card is full). For expired: how many stamps were lost. For rescue: how many stamps staff put on.</span></li>
       <li><span class="l">F</span><span class="n">weekday</span><span class="d">Mon to Sun. Feeds "Stamps by day of the week".</span></li>
       <li><span class="l">G</span><span class="n">hour</span><span class="d">0 to 23. Feeds "Stamps by hour".</span></li>
       <li><span class="l">H</span><span class="n">drink</span><span class="d">Free drinks only: the drink staff picked, if they picked one.</span></li>
       <li><span class="l">I</span><span class="n">daysToFill</span><span class="d">Free drinks only: days from the first stamp to the free drink.</span></li>
+      <li><span class="l">J</span><span class="n">note</span><span class="d">For rescue: the reason staff typed. For moved: which move this was.</span></li>
     </ul>
   </section>
 
@@ -210,8 +218,10 @@ table.grid{border-collapse:collapse;font:13px/1.3 var(--f-mono);font-variant-num
     <div class="rules">
       <div class="rule"><strong>Add stamp</strong><span>Cards: stamps +1, lastStampDate = today, lastActivity = now (cardStart set on the first stamp). Log: one <code>stamp</code> row.</span></div>
       <div class="rule"><strong>Give free drink</strong><span>Only at 10 stamps. Cards: stamps back to 0, cardStart cleared, freeDrinks +1. Log: one <code>free_drink</code> row with the drink and days to fill.</span></div>
+      <div class="rule"><strong>Card on a new phone</strong><span>Staff tap "Yes, it's theirs". Cards: device = the new phone, moves +1. Log: one <code>moved</code> row.</span></div>
+      <div class="rule"><strong>Lost card rescue</strong><span>Only on an empty card, once per card, 3 a day for the cafe, 1 to 9 stamps, reason required. Cards: stamps = that number, rescued = today. Log: one <code>rescue</code> row with the reason.</span></div>
       <div class="rule"><strong>Nightly 4am</strong><span>Unfinished cards past their month go back to 0 and log an <code>expired</code> row. Cards idle about 6 months are deleted from Cards.</span></div>
-      <div class="rule"><strong>Customer checks card</strong><span>Reads the Cards row only. Writes nothing.</span></div>
+      <div class="rule"><strong>Customer checks card</strong><span>Reads the Cards row only. Writes nothing. Limited to 40 checks a minute per card and 1,200 a minute in total; past that the card is told to wait 20 seconds.</span></div>
     </div>
     <p class="note">Please don't type in the Cards or Log tabs. A typo in the card column would disconnect that customer's stamps. If something needs fixing, ask Claude.</p>
   </section>

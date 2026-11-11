@@ -3,6 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Only our own scripts run. The stamp card may talk to Google Apps Script (script.google.com redirects to
+       script.googleusercontent.com). Styles allow inline because script.js writes the scroll animations as CSS. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://script.google.com https://script.googleusercontent.com; object-src 'none'; base-uri 'self'; form-action 'none'">
   <title>Brew Addict Café · Night coffee in Kundasang, Sabah</title>
   <meta name="description" content="Brew Addict Café, the night-coffee hideout on Jalan Sinisian, Kundasang. Lattes, matcha and Spanish latte, open daily 10:00 AM – 11:30 PM. Order on foodpanda or drop by.">
   <meta name="theme-color" content="#f5f2ec">
@@ -61,7 +64,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Lexend:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="styles.css?v=20261105e">
+  <link rel="stylesheet" href="styles.css?v=20261111a">
   <link rel="preload" as="image" href="images/signboard.webp" type="image/webp">
 </head>
 <body>
@@ -297,8 +300,8 @@
     </section>
   </main>
 
-  <script src="script.js?v=20261105e"></script>
-  <script src="vendor/qrcode.min.js?v=20261105e"></script>
-  <script src="stamp-card.js?v=20261105e"></script>
+  <script src="script.js?v=20261111a"></script>
+  <script src="vendor/qrcode.min.js?v=20261111a"></script>
+  <script src="stamp-card.js?v=20261111a"></script>
 </body>
 </html>
